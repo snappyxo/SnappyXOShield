@@ -5,14 +5,18 @@
 
 // Motor Pins
 #ifdef SNAPPYXO_SHIELDV2
-const int motorLeft_InputOne = 4,  motorLeft_InputTwo = 5,  motorLeft_Enable = 6;
-const int motorRight_InputOne = 12, motorRight_InputTwo = 13, motorRight_Enable = 11;
+// Only set this before including this library if you know you have the V2
+// shield. If you bought the kit after 2026, you can ignore this part.
+const int motorLeft_InputOne = 4, motorLeft_InputTwo = 5, motorLeft_Enable = 6;
+const int motorRight_InputOne = 12, motorRight_InputTwo = 13,
+		  motorRight_Enable = 11;
 #else
-const int motorLeft_InputOne = 4,  motorLeft_InputTwo = 7,  motorLeft_Enable = 5;
-const int motorRight_InputOne = 8,  motorRight_InputTwo = 9,  motorRight_Enable = 6;
+const int motorLeft_InputOne = 4, motorLeft_InputTwo = 7, motorLeft_Enable = 5;
+const int motorRight_InputOne = 8, motorRight_InputTwo = 9,
+		  motorRight_Enable = 6;
 #endif
 
-// Inversion flags — set via initMotors(invertL, invertR, invertLR)
+// Inversion flags - set via initMotors(invertL, invertR, invertLR)
 static bool motorInvertL = false;
 static bool motorInvertR = false;
 static bool motorInvertLR = false;
