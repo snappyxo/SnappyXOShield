@@ -15,6 +15,7 @@ spinLeft	KEYWORD2
 spinRight	KEYWORD2
 setMotors	KEYWORD2
 drive	KEYWORD2
+setTurnSpeed	KEYWORD2
 stop	KEYWORD2
 brake	KEYWORD2
 

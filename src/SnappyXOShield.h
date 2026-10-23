@@ -48,8 +48,14 @@ public:
 
 	// Joystick-style driving for a two-wheeled car. throttle runs from -255
 	// (backward) to 255 (forward), steering from -255 (left) to 255 (right).
-	// With no throttle, steering spins the car in place.
+	// With no throttle, steering spins the car in place. To make it easier to
+	// drive, values under 10 count as 0, and steering is squared (small pushes
+	// turn gently) and limited to the turn speed.
 	void drive(int throttle, int steering);
+
+	// How much of the motors' power drive() uses for turning, 0-100 percent
+	// (60 when not set). Lower makes steering gentler, 100 is the full range.
+	void setTurnSpeed(int percent);
 
 	void stop();   // Coast: cut the power and roll to a stop
 	void brake();  // Hard stop: lock both motors
@@ -58,6 +64,7 @@ private:
 	uint8_t _leftIn1, _leftIn2, _leftEnable;
 	uint8_t _rightIn1, _rightIn2, _rightEnable;
 	bool _invertLeft, _invertRight, _swap;
+	int _turnSpeed;
 
 	void writeMotor(uint8_t forwardPin, uint8_t backwardPin, uint8_t enablePin,
 					int speed);

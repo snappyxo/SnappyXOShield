@@ -7,6 +7,7 @@
 - Everything is now in the `SnappyXOShield` class: declare `SnappyXOShield shield(SnappyXOShield::V3);` above `setup()` and call `shield.begin()`, `shield.forward()` and so on. The library no longer defines global functions such as `forward()` and `drive()`, which clashed with functions of the same name in sketches: a sketch's own `drive()` (like the one in MicroBlue's drive example) failed to compile, and a sketch's `turnRight(float)` called as `turnRight(90)` ran the library's `turnRight(int speed)` instead.
 - Every sketch names its shield version, `SnappyXOShield shield(SnappyXOShield::V3);` or `SnappyXOShield shield(SnappyXOShield::V2);`. There's no default. This replaces `#define SNAPPYXO_SHIELDV2` before the `#include`.
 - `drive(throttle, steering)` takes -255 to 255 for each input (was -512 to 512), the same scale as every other speed.
+- `drive()` steers more gently, so the robot is easier to drive: values under 10 count as 0, steering is squared so small pushes give fine corrections, and turning uses 60% of the motors' power. New `setTurnSpeed(percent)` changes that share.
 - New `setMotors(left, right)` sets each wheel's speed. It replaces calling the internal `_motorWrite()`.
 - `pause()` is now `stop()`.
 - `turnLeft()` and `turnRight()` are now `spinLeft()` and `spinRight()`, since they spin the robot in place. Turning while moving is `drive()` with steering.

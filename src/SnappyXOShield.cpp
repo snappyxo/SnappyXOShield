@@ -1,7 +1,10 @@
 #include "SnappyXOShield.h"
 
+// drive() treats throttle and steering below this as 0
+static const int DRIVE_DEADBAND = 10;
+
 SnappyXOShield::SnappyXOShield(Version version)
-	: _invertLeft(false), _invertRight(false), _swap(false) {
+	: _invertLeft(false), _invertRight(false), _swap(false), _turnSpeed(60) {
 	if (version == V2) {
 		_leftIn1 = 4, _leftIn2 = 5, _leftEnable = 6;
 		_rightIn1 = 12, _rightIn2 = 13, _rightEnable = 11;
@@ -51,9 +54,19 @@ void SnappyXOShield::drive(int throttle, int steering) {
 	throttle = constrain(throttle, -255, 255);
 	steering = constrain(steering, -255, 255);
 
-	// long, because left * 255 below doesn't fit in the UNO R3's 16-bit int
-	long left = throttle + steering;
-	long right = throttle - steering;
+	// Ignore small movements around the joystick's center, so a resting
+	// thumb doesn't creep or turn the robot
+	if (abs(throttle) < DRIVE_DEADBAND) throttle = 0;
+	if (abs(steering) < DRIVE_DEADBAND) steering = 0;
+
+	// Square the steering, keeping its sign: small pushes turn gently for fine
+	// corrections, and a full push still turns fully. Then scale it to the
+	// turn speed. long, because these products don't fit in the UNO R3's
+	// 16-bit int.
+	long turn = (long)steering * abs(steering) / 255 * _turnSpeed / 100;
+
+	long left = throttle + turn;
+	long right = throttle - turn;
 
 	// Past full speed, slow both wheels by the same factor so the turn keeps
 	// its shape
@@ -64,6 +77,10 @@ void SnappyXOShield::drive(int throttle, int steering) {
 	}
 
 	setMotors(left, right);
+}
+
+void SnappyXOShield::setTurnSpeed(int percent) {
+	_turnSpeed = constrain(percent, 0, 100);
 }
 
 void SnappyXOShield::stop() {

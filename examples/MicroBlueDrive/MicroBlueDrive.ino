@@ -13,6 +13,7 @@ SnappyXOShield shield(SnappyXOShield::V3);  // v3 shield
 
 void setup() {
   shield.begin();  // sets up the motor pins
+  shield.setTurnSpeed(60);  // how hard the robot turns, 0-100 percent: lower makes steering gentler
   // shield.invertLeft();  // uncomment if a wheel turns the wrong way, see the BasicMotorControl example
 
   manager.begin("SnappyXO Robot");  // the name the app shows when you connect: change it to tell robots apart
