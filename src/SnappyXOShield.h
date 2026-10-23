@@ -3,97 +3,64 @@
 
 #include <Arduino.h>
 
-// Motor Pins
-#ifdef SNAPPYXO_SHIELDV2
-// Only set this before including this library if you know you have the V2
-// shield. If you bought the kit after 2026, you can ignore this part.
-const int motorLeft_InputOne = 4, motorLeft_InputTwo = 5, motorLeft_Enable = 6;
-const int motorRight_InputOne = 12, motorRight_InputTwo = 13,
-		  motorRight_Enable = 11;
-#else
-const int motorLeft_InputOne = 4, motorLeft_InputTwo = 7, motorLeft_Enable = 5;
-const int motorRight_InputOne = 8, motorRight_InputTwo = 9,
-		  motorRight_Enable = 6;
-#endif
+// Drives the two DC motors on the SnappyXO Motor Shield.
+//
+//   SnappyXOShield shield(SnappyXOShield::V3);  // v3 shield
+//   SnappyXOShield shield(SnappyXOShield::V2);  // v2 shield
+//
+// There's no default, so every sketch says which shield it's written for.
+// Call begin() once in setup(). Speeds run from -255 (full backward) to 255
+// (full forward), and 0 stops.
+class SnappyXOShield {
+public:
+	// Shield version, printed on the board
+	enum Version { V2 = 2, V3 = 3 };
 
-// Inversion flags - set via initMotors(invertL, invertR, invertLR)
-static bool motorInvertL = false;
-static bool motorInvertR = false;
-static bool motorInvertLR = false;
+	explicit SnappyXOShield(Version version);
 
-void initMotors(bool invertL = false, bool invertR = false,
-				bool invertLR = false) {
-	motorInvertL = invertL;
-	motorInvertR = invertR;
-	motorInvertLR = invertLR;
-	pinMode(motorLeft_InputOne, OUTPUT);
-	pinMode(motorLeft_InputTwo, OUTPUT);
-	pinMode(motorLeft_Enable, OUTPUT);
-	pinMode(motorRight_InputOne, OUTPUT);
-	pinMode(motorRight_InputTwo, OUTPUT);
-	pinMode(motorRight_Enable, OUTPUT);
-}
-
-// Range: -255 to 255. Positive = forward, negative = backward.
-void _motorWrite(int leftSpeed, int rightSpeed) {
-	if (motorInvertLR) {
-		int t = leftSpeed;
-		leftSpeed = rightSpeed;
-		rightSpeed = t;
-	}
-	if (motorInvertL) leftSpeed = -leftSpeed;
-	if (motorInvertR) rightSpeed = -rightSpeed;
-
-	bool leftFwd = leftSpeed >= 0;
-	bool rightFwd = rightSpeed >= 0;
-
-	digitalWrite(motorLeft_InputOne, leftFwd ? HIGH : LOW);
-	digitalWrite(motorLeft_InputTwo, leftFwd ? LOW : HIGH);
-	analogWrite(motorLeft_Enable, abs(leftSpeed));
-
-	digitalWrite(motorRight_InputOne, rightFwd ? LOW : HIGH);
-	digitalWrite(motorRight_InputTwo, rightFwd ? HIGH : LOW);
-	analogWrite(motorRight_Enable, abs(rightSpeed));
-}
-
-void forward() { _motorWrite(255, 255); }
-void forward(int speed) { _motorWrite(speed, speed); }
-void reverse() { _motorWrite(-255, -255); }
-void reverse(int speed) { _motorWrite(-speed, -speed); }
-void turnLeft() { _motorWrite(-255, 255); }
-void turnLeft(int speed) { _motorWrite(-speed, speed); }
-void turnRight() { _motorWrite(255, -255); }
-void turnRight(int speed) { _motorWrite(speed, -speed); }
-
-// Coasting brake: slows down slowly to a stop
-void pause() {
-	analogWrite(motorLeft_Enable, 0);
-	analogWrite(motorRight_Enable, 0);
-}
-
-// Active brake: quickly stops motors
-void brake() {
-	digitalWrite(motorLeft_InputOne, HIGH);
-	digitalWrite(motorLeft_InputTwo, HIGH);
-	analogWrite(motorLeft_Enable, 255);
-	digitalWrite(motorRight_InputOne, HIGH);
-	digitalWrite(motorRight_InputTwo, HIGH);
-	analogWrite(motorRight_Enable, 255);
-}
-
-// Differential drive: throttle and steering each in range -512 to +512.
-// Zero throttle + nonzero steering does in place turns.
-void drive(int throttle, int steering) {
-	int left = throttle + steering;
-	int right = throttle - steering;
-
-	int maxVal = max(abs(left), abs(right));
-	if (maxVal > 512) {
-		left = left * 512 / maxVal;
-		right = right * 512 / maxVal;
+	// Only here so that SnappyXOShield shield; without a version fails to
+	// compile with this message instead of a cryptic one
+	template <bool versionGiven = false>
+	SnappyXOShield() {
+		static_assert(versionGiven, "Say which shield you have: SnappyXOShield shield(SnappyXOShield::V3); or SnappyXOShield shield(SnappyXOShield::V2);");
 	}
 
-	_motorWrite(left * 255 / 512, right * 255 / 512);
-}
+	// Sets the motor pins as outputs and stops both motors. Call once in setup().
+	void begin();
+
+	// For a wheel that turns the wrong way. invertLeft() and invertRight()
+	// reverse the motor on the shield's left or right output; swapMotors()
+	// swaps the two outputs, for motors plugged in the other way round.
+	void invertLeft(bool invert = true);
+	void invertRight(bool invert = true);
+	void swapMotors(bool swap = true);
+
+	// Both wheels at speed (0-255, full speed when left out)
+	void forward(int speed = 255);
+	void reverse(int speed = 255);
+
+	// Spin in place: one wheel forward, the other backward
+	void spinLeft(int speed = 255);
+	void spinRight(int speed = 255);
+
+	// Each wheel's speed, -255 (full backward) to 255 (full forward)
+	void setMotors(int left, int right);
+
+	// Joystick-style driving for a two-wheeled car. throttle runs from -255
+	// (backward) to 255 (forward), steering from -255 (left) to 255 (right).
+	// With no throttle, steering spins the car in place.
+	void drive(int throttle, int steering);
+
+	void stop();   // Coast: cut the power and roll to a stop
+	void brake();  // Hard stop: lock both motors
+
+private:
+	uint8_t _leftIn1, _leftIn2, _leftEnable;
+	uint8_t _rightIn1, _rightIn2, _rightEnable;
+	bool _invertLeft, _invertRight, _swap;
+
+	void writeMotor(uint8_t forwardPin, uint8_t backwardPin, uint8_t enablePin,
+					int speed);
+};
 
 #endif
