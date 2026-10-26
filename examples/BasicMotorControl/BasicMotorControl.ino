@@ -1,5 +1,8 @@
 // Drives a two-wheeled robot forward, backward and around in a loop.
 // Also a quick check that both motors turn the right way.
+//
+// Developed by A+ Mobile Solutions Inc
+// Licensed under the MIT License. See LICENSE for details.
 
 #include <SnappyXOShield.h>
 

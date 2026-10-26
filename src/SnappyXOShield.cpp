@@ -1,3 +1,6 @@
+// Developed by A+ Mobile Solutions Inc
+// Licensed under the MIT License. See LICENSE for details.
+
 #include "SnappyXOShield.h"
 
 // drive() treats throttle and steering below this as 0

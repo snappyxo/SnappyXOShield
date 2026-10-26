@@ -4,6 +4,9 @@
 // in the background).
 //
 // Requires the MicroBlue library 2.1 or later -> install it via Sketch -> Include Library -> Manage Libraries.
+//
+// Developed by A+ Mobile Solutions Inc
+// Licensed under the MIT License. See LICENSE for details.
 
 #include <MicroBlue.h>
 #include <SnappyXOShield.h>

@@ -125,3 +125,7 @@ Version 1.0.0 puts everything in the `SnappyXOShield` class, so sketches written
 
 - **SnappyXO Motor Shield:** v3 and v2
 - **Boards:** any Arduino, since the library only uses `pinMode()`, `digitalWrite()` and `analogWrite()`. The examples are compiled for the UNO R3 and UNO R4 WiFi on every change.
+
+## License
+
+MIT License — Copyright (c) 2026 A+ Mobile Solutions Inc. See [LICENSE](LICENSE) for details.

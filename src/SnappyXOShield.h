@@ -1,3 +1,6 @@
+// Developed by A+ Mobile Solutions Inc
+// Licensed under the MIT License. See LICENSE for details.
+
 #ifndef SNAPPYXOSHIELD_H
 #define SNAPPYXOSHIELD_H
 
