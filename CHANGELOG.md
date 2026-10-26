@@ -16,6 +16,7 @@
 - Fixed: speeds above 255 wrapped around (300 ran at 44 on the UNO R3). Every speed is now limited to -255 to 255.
 - Fixed: including the library from more than one file of a sketch failed with "multiple definition" errors.
 - Examples: `MicroBlueRobot` is now `MicroBlueDrive`, for MicroBlue 2.1: it reads the app's `x,y` (0-1023) and stops the motors when the phone disconnects or the app's heartbeat stops.
+- New example `BasicMotorControlNoLibrary`: the same `loop()` as `BasicMotorControl`, with `forward()`, `reverse()`, `spinLeft()`, `spinRight()`, `setMotors()`, `drive()`, `stop()` and `brake()` written out using only `pinMode()`, `digitalWrite()` and `analogWrite()`, and a table of what the motor driver's IN1, IN2 and PWM pins do, to show what the library does inside. It drives the pins exactly as the library does.
 - README: removed the link to the deleted v2 example, added the servo headers of each shield.
 - License: now MIT (was GPL-3.0), with A+ Mobile Solutions Inc as the copyright holder, like MicroBlue. The source files and examples say so at the top.
 - CI compiles the examples for the UNO R3 and UNO R4 WiFi.

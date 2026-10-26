@@ -31,6 +31,8 @@ void loop() {
 
 See [`examples/BasicMotorControl/`](examples/BasicMotorControl/BasicMotorControl.ino) for the full sketch, and [`examples/MicroBlueDrive/`](examples/MicroBlueDrive/MicroBlueDrive.ino) to drive from the MicroBlue app on an UNO R4 WiFi.
 
+To see what the library does inside, [`examples/BasicMotorControlNoLibrary/`](examples/BasicMotorControlNoLibrary/BasicMotorControlNoLibrary.ino) has the same `loop()` as BasicMotorControl, with `forward()`, `drive()` and the other functions written out using only `pinMode()`, `digitalWrite()` and `analogWrite()`. It also explains what each motor driver pin does.
+
 ## Shields
 
 |                             | v3                          | v2                            |
