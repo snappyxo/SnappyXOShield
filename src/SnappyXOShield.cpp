@@ -3,17 +3,16 @@
 
 #include "SnappyXOShield.h"
 
-// drive() treats throttle and steering below this as 0
-static const int DRIVE_DEADBAND = 10;
-
 SnappyXOShield::SnappyXOShield(Version version)
-	: _invertLeft(false), _invertRight(false), _swap(false), _turnSpeed(60) {
+	: _invertLeft(false), _invertRight(false), _swap(false) {
 	if (version == V2) {
 		_leftIn1 = 4, _leftIn2 = 5, _leftEnable = 6;
 		_rightIn1 = 12, _rightIn2 = 13, _rightEnable = 11;
-	} else {
+	} else if (version == V3) {
 		_leftIn1 = 4, _leftIn2 = 7, _leftEnable = 5;
 		_rightIn1 = 8, _rightIn2 = 9, _rightEnable = 6;
+	} else {
+		// NOTE: Add any future shield version code here
 	}
 }
 
@@ -27,14 +26,28 @@ void SnappyXOShield::begin() {
 	stop();
 }
 
-void SnappyXOShield::invertLeft(bool invert) { _invertLeft = invert; }
-void SnappyXOShield::invertRight(bool invert) { _invertRight = invert; }
-void SnappyXOShield::swapMotors(bool swap) { _swap = swap; }
+void SnappyXOShield::invertLeft(bool invert) {
+	_invertLeft = invert;
+}
+void SnappyXOShield::invertRight(bool invert) {
+	_invertRight = invert;
+}
+void SnappyXOShield::swapMotors(bool swap) {
+	_swap = swap;
+}
 
-void SnappyXOShield::forward(int speed) { setMotors(speed, speed); }
-void SnappyXOShield::reverse(int speed) { setMotors(-speed, -speed); }
-void SnappyXOShield::spinLeft(int speed) { setMotors(-speed, speed); }
-void SnappyXOShield::spinRight(int speed) { setMotors(speed, -speed); }
+void SnappyXOShield::forward(int speed) {
+	setMotors(speed, speed);
+}
+void SnappyXOShield::reverse(int speed) {
+	setMotors(-speed, -speed);
+}
+void SnappyXOShield::spinLeft(int speed) {
+	setMotors(-speed, speed);
+}
+void SnappyXOShield::spinRight(int speed) {
+	setMotors(speed, -speed);
+}
 
 void SnappyXOShield::setMotors(int left, int right) {
 	left = constrain(left, -255, 255);
@@ -45,8 +58,12 @@ void SnappyXOShield::setMotors(int left, int right) {
 		left = right;
 		right = t;
 	}
-	if (_invertLeft) left = -left;
-	if (_invertRight) right = -right;
+	if (_invertLeft) {
+		left = -left;
+	}
+	if (_invertRight) {
+		right = -right;
+	}
 
 	// Forward is IN1 high on the left motor, but IN2 high on the right motor
 	writeMotor(_leftIn1, _leftIn2, _leftEnable, left);
@@ -54,36 +71,16 @@ void SnappyXOShield::setMotors(int left, int right) {
 }
 
 void SnappyXOShield::drive(int throttle, int steering) {
-	throttle = constrain(throttle, -255, 255);
-	steering = constrain(steering, -255, 255);
+	int left = throttle + steering;
+	int right = throttle - steering;
 
-	// Ignore small movements around the joystick's center, so a resting
-	// thumb doesn't creep or turn the robot
-	if (abs(throttle) < DRIVE_DEADBAND) throttle = 0;
-	if (abs(steering) < DRIVE_DEADBAND) steering = 0;
-
-	// Square the steering, keeping its sign: small pushes turn gently for fine
-	// corrections, and a full push still turns fully. Then scale it to the
-	// turn speed. long, because these products don't fit in the UNO R3's
-	// 16-bit int.
-	long turn = (long)steering * abs(steering) / 255 * _turnSpeed / 100;
-
-	long left = throttle + turn;
-	long right = throttle - turn;
-
-	// Past full speed, slow both wheels by the same factor so the turn keeps
-	// its shape
-	long biggest = max(abs(left), abs(right));
-	if (biggest > 255) {
-		left = left * 255 / biggest;
-		right = right * 255 / biggest;
+	int maxVal = max(abs(left), abs(right));
+	if (maxVal > 512) {
+		left = left * 512 / maxVal;
+		right = right * 512 / maxVal;
 	}
 
-	setMotors(left, right);
-}
-
-void SnappyXOShield::setTurnSpeed(int percent) {
-	_turnSpeed = constrain(percent, 0, 100);
+	setMotors(left * 255 / 512, right * 255 / 512);
 }
 
 void SnappyXOShield::stop() {

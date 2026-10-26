@@ -15,7 +15,7 @@
 // Call begin() once in setup(). Speeds run from -255 (full backward) to 255
 // (full forward), and 0 stops.
 class SnappyXOShield {
-public:
+   public:
 	// Shield version, printed on the board
 	enum Version { V2 = 2, V3 = 3 };
 
@@ -25,10 +25,14 @@ public:
 	// compile with this message instead of a cryptic one
 	template <bool versionGiven = false>
 	SnappyXOShield() {
-		static_assert(versionGiven, "Say which shield you have: SnappyXOShield shield(SnappyXOShield::V3); or SnappyXOShield shield(SnappyXOShield::V2);");
+		static_assert(versionGiven,
+					  "Say which shield you have: SnappyXOShield "
+					  "shield(SnappyXOShield::V3); or SnappyXOShield "
+					  "shield(SnappyXOShield::V2);");
 	}
 
-	// Sets the motor pins as outputs and stops both motors. Call once in setup().
+	// Sets the motor pins as outputs and stops both motors. Call once in
+	// setup().
 	void begin();
 
 	// For a wheel that turns the wrong way. invertLeft() and invertRight()
@@ -55,6 +59,7 @@ public:
 	// drive, values under 10 count as 0, and steering is squared (small pushes
 	// turn gently) and limited to the turn speed.
 	void drive(int throttle, int steering);
+	void drive(int throttle, int steering, int deadband);
 
 	// How much of the motors' power drive() uses for turning, 0-100 percent
 	// (60 when not set). Lower makes steering gentler, 100 is the full range.
@@ -63,11 +68,10 @@ public:
 	void stop();   // Coast: cut the power and roll to a stop
 	void brake();  // Hard stop: lock both motors
 
-private:
+   private:
 	uint8_t _leftIn1, _leftIn2, _leftEnable;
 	uint8_t _rightIn1, _rightIn2, _rightEnable;
 	bool _invertLeft, _invertRight, _swap;
-	int _turnSpeed;
 
 	void writeMotor(uint8_t forwardPin, uint8_t backwardPin, uint8_t enablePin,
 					int speed);
