@@ -97,8 +97,8 @@ void SnappyXOShield::brake() {
 	analogWrite(_rightEnable, 255);
 }
 
-void SnappyXOShield::writeMotor(uint8_t forwardPin, uint8_t backwardPin,
-								uint8_t enablePin, int speed) {
+void SnappyXOShield::_writeMotor(uint8_t forwardPin, uint8_t backwardPin,
+								 uint8_t enablePin, int speed) {
 	digitalWrite(forwardPin, speed >= 0 ? HIGH : LOW);
 	digitalWrite(backwardPin, speed >= 0 ? LOW : HIGH);
 	analogWrite(enablePin, abs(speed));

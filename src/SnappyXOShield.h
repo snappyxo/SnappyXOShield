@@ -73,8 +73,8 @@ class SnappyXOShield {
 	uint8_t _rightIn1, _rightIn2, _rightEnable;
 	bool _invertLeft, _invertRight, _swap;
 
-	void writeMotor(uint8_t forwardPin, uint8_t backwardPin, uint8_t enablePin,
-					int speed);
+	void _writeMotor(uint8_t forwardPin, uint8_t backwardPin, uint8_t enablePin,
+					 int speed);
 };
 
 #endif
