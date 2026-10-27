@@ -60,8 +60,8 @@ class SnappyXOShield {
 	// By default both inputs are squared (sign preserved) before driving, so
 	// small stick motions near 0 barely move the car while larger motions
 	// still reach full speed. Pass false to drive an axis linearly instead.
-	void drive(int throttle, int steering);
-	void drive(int throttle, int steering, bool squareThrottle, bool squareSteering);
+	void drive(int throttle, int steering, bool squareThrottle = true,
+			   bool squareSteering = true);
 
 	void stop();   // Coast: cut the power and roll to a stop
 	void brake();  // Hard stop: lock both motors

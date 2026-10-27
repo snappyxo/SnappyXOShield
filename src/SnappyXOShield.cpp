@@ -78,10 +78,6 @@ int squareInput(int v) {
 }
 }  // namespace
 
-void SnappyXOShield::drive(int throttle, int steering) {
-	drive(throttle, steering, true, true);
-}
-
 void SnappyXOShield::drive(int throttle, int steering, bool squareThrottle,
 						   bool squareSteering) {
 	if (squareThrottle) {
