@@ -59,7 +59,6 @@ class SnappyXOShield {
 	// drive, values under 10 count as 0, and steering is squared (small pushes
 	// turn gently) and limited to the turn speed.
 	void drive(int throttle, int steering);
-	void drive(int throttle, int steering, int deadband);
 
 	// How much of the motors' power drive() uses for turning, 0-100 percent
 	// (60 when not set). Lower makes steering gentler, 100 is the full range.
