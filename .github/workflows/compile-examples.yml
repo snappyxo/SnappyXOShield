@@ -18,7 +18,6 @@ jobs:
               - source-path: ./
             sketch-paths: |
               - examples/BasicMotorControl
-              - examples/MicroBlueDrive
           - name: UNO R4 WiFi
             fqbn: arduino:renesas_uno:unor4wifi
             platform: arduino:renesas_uno

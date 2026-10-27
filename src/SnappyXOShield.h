@@ -55,14 +55,8 @@ class SnappyXOShield {
 
 	// Joystick-style driving for a two-wheeled car. throttle runs from -255
 	// (backward) to 255 (forward), steering from -255 (left) to 255 (right).
-	// With no throttle, steering spins the car in place. To make it easier to
-	// drive, values under 10 count as 0, and steering is squared (small pushes
-	// turn gently) and limited to the turn speed.
+	// With no throttle, steering spins the car in place.
 	void drive(int throttle, int steering);
-
-	// How much of the motors' power drive() uses for turning, 0-100 percent
-	// (60 when not set). Lower makes steering gentler, 100 is the full range.
-	void setTurnSpeed(int percent);
 
 	void stop();   // Coast: cut the power and roll to a stop
 	void brake();  // Hard stop: lock both motors
