@@ -95,9 +95,9 @@ void SnappyXOShield::drive(int throttle, int steering, bool squareThrottle,
 	int right = throttle - steering;
 
 	int maxVal = max(abs(left), abs(right));
-	if (maxVal > 256) {
-		left = left * 256 / maxVal;
-		right = right * 256 / maxVal;
+	if (maxVal > 255) {
+		left = left * 255 / maxVal;
+		right = right * 255 / maxVal;
 	}
 
 	setMotors(left, right);
