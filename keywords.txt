@@ -1,12 +1,24 @@
 # Syntax highlighting for SnappyXOShield
 # See: https://arduino.github.io/arduino-cli/latest/library-specification/#keywords
 
-# Functions (KEYWORD2)
-initMotors	KEYWORD2
+# Classes (KEYWORD1)
+SnappyXOShield	KEYWORD1
+
+# Methods (KEYWORD2)
+begin	KEYWORD2
+invertLeft	KEYWORD2
+invertRight	KEYWORD2
+swapMotors	KEYWORD2
 forward	KEYWORD2
 reverse	KEYWORD2
-turnLeft	KEYWORD2
-turnRight	KEYWORD2
-pause	KEYWORD2
-brake	KEYWORD2
+spinLeft	KEYWORD2
+spinRight	KEYWORD2
+setMotors	KEYWORD2
 drive	KEYWORD2
+setTurnSpeed	KEYWORD2
+stop	KEYWORD2
+brake	KEYWORD2
+
+# Constants (LITERAL1)
+V2	LITERAL1
+V3	LITERAL1

@@ -1,102 +1,133 @@
 # SnappyXOShield
 
-An Arduino library for simplified motor control with the SnappyXO Motor Shield.
+An Arduino library for driving the two motors on the SnappyXO Motor Shield. It knows which pins the shield's motor driver uses, so a sketch only says where to go.
 
 ## Installation
 
 In the Arduino IDE, open **Sketch → Include Library → Manage Libraries…**, search for **SnappyXOShield**, and click Install.
-
-## Pin Mapping
-
-**Default (Shield v3.0.0+)**
-
-| Motor | IN1 | IN2 | Enable (PWM) |
-|-------|-----|-----|--------------|
-| Left  | 4   | 7   | 5            |
-| Right | 8   | 9   | 6            |
-
-**Shield v2.0.0+ — define `SNAPPYXO_SHIELDV2` before including the library**
-
-| Motor | IN1 | IN2 | Enable (PWM) |
-|-------|-----|-----|--------------|
-| Left  | 4   | 5   | 6            |
-| Right | 12  | 13  | 11           |
-
-To target a v2 shield, add `#define SNAPPYXO_SHIELDV2` before the `#include`:
-
-```cpp
-#define SNAPPYXO_SHIELDV2
-#include <SnappyXOShield.h>
-```
-
-See [`examples/BasicMotorControl_ShieldV2/`](examples/BasicMotorControl_ShieldV2/BasicMotorControl_ShieldV2.ino) for a full example.
-
-## API
-
-### `initMotors(invertL, invertR, invertLR)`
-
-Call once in `setup()`. All parameters are optional and default to `false`.
-
-| Parameter  | Description                                      |
-|------------|--------------------------------------------------|
-| `invertL`  | Reverse the left motor direction                 |
-| `invertR`  | Reverse the right motor direction                |
-| `invertLR` | Swap left and right motors entirely              |
-
-### Movement Functions
-
-| Function              | Description                                      |
-|-----------------------|--------------------------------------------------|
-| `forward()`           | Both motors full speed forward                   |
-| `forward(speed)`      | Both motors forward at `speed` (0–255)           |
-| `reverse()`           | Both motors full speed backward                  |
-| `reverse(speed)`      | Both motors backward at `speed` (0–255)          |
-| `turnLeft()`          | Spin left in place at full speed                 |
-| `turnLeft(speed)`     | Spin left in place at `speed` (0–255)            |
-| `turnRight()`         | Spin right in place at full speed                |
-| `turnRight(speed)`    | Spin right in place at `speed` (0–255)           |
-| `pause()`             | Coasting stop — gradually slows to a halt        |
-| `brake()`             | Active stop — immediately locks both motors      |
-
-### `drive(throttle, steering)`
-
-Joystick-style differential drive. Both inputs range from **-512 to +512**.
-
-- `throttle`: forward/backward intensity
-- `steering`: left/right intensity
-
-The function mixes throttle and steering into left/right wheel speeds and normalizes the result so the speed ratio is preserved when the combined value would exceed the input range. Zero throttle with nonzero steering produces smooth in-place turns with no dead zone.
 
 ## Example
 
 ```cpp
 #include <SnappyXOShield.h>
 
+SnappyXOShield shield(SnappyXOShield::V3);  // the shield version printed on the board: V3 or V2
+
 void setup() {
-  initMotors();
+  shield.begin();
 }
 
 void loop() {
-  forward();
+  shield.forward();
   delay(1000);
 
-  reverse();
-  delay(1000);
-
-  turnLeft();
+  shield.spinLeft(150);
   delay(500);
 
-  turnRight();
-  delay(500);
-
-  pause();
+  shield.stop();
   delay(1000);
 }
 ```
 
-See [`examples/BasicMotorControl/`](examples/BasicMotorControl/BasicMotorControl.ino) for the full sketch.
+See [`examples/BasicMotorControl/`](examples/BasicMotorControl/BasicMotorControl.ino) for the full sketch, and [`examples/MicroBlueDrive/`](examples/MicroBlueDrive/MicroBlueDrive.ino) to drive from the MicroBlue app on an UNO R4 WiFi.
+
+To see what the library does inside, [`examples/BasicMotorControlNoLibrary/`](examples/BasicMotorControlNoLibrary/BasicMotorControlNoLibrary.ino) has the same `loop()` as BasicMotorControl, with `forward()`, `drive()` and the other functions written out using only `pinMode()`, `digitalWrite()` and `analogWrite()`. It also explains what each motor driver pin does.
+
+## Shields
+
+|                             | v3                          | v2                            |
+|-----------------------------|-----------------------------|-------------------------------|
+| Board                       | UNO R4 WiFi, or UNO R3      | UNO R3 with an HM-10 module   |
+| In the sketch               | `SnappyXOShield shield(SnappyXOShield::V3);` | `SnappyXOShield shield(SnappyXOShield::V2);` |
+| Left motor IN1 / IN2 / PWM  | 4 / 7 / 5                   | 4 / 5 / 6                     |
+| Right motor IN1 / IN2 / PWM | 8 / 9 / 6                   | 12 / 13 / 11                  |
+| Servo headers               | A0, A1, A2, A3              | 9, 10, A0, A1                 |
+
+The library sets up the motor pins only, and a sketch shouldn't use them for anything else. The servo headers are listed for reference: use the pin number printed on the board, for example `myServo.attach(A0);`.
+
+On the UNO R3, the IRremote library takes over the timer that makes the PWM on pin 11, the v2 shield's right motor speed pin, so an IR receiver and the v2 shield's motors don't work together. The v3 shield's speed pins (5 and 6) aren't affected.
+
+## API
+
+Speeds run from **-255** (full backward) to **255** (full forward), and 0 stops. Values outside that range are limited to it.
+
+| Call                                | What it does                                              |
+|-------------------------------------|-----------------------------------------------------------|
+| `SnappyXOShield shield(SnappyXOShield::V3);` | Creates the shield, above `setup()`. The version printed on the board, `SnappyXOShield::V3` or `SnappyXOShield::V2`, is required |
+| `shield.begin()`                    | Sets up the motor pins. Call once in `setup()`            |
+| `shield.forward()`                  | Both wheels forward at full speed                         |
+| `shield.forward(speed)`             | Both wheels forward at `speed` (0–255)                    |
+| `shield.reverse()`, `reverse(speed)`| Both wheels backward                                      |
+| `shield.spinLeft()`, `spinLeft(speed)`  | Spins left in place: left wheel backward, right wheel forward |
+| `shield.spinRight()`, `spinRight(speed)`| Spins right in place                                  |
+| `shield.setMotors(left, right)`     | Sets each wheel's speed (-255 to 255)                     |
+| `shield.drive(throttle, steering)`  | Joystick-style driving, see below                         |
+| `shield.setTurnSpeed(percent)`      | How much of the motors' power `drive()` uses for turning, 0–100 (60 when not set). Lower makes steering gentler |
+| `shield.stop()`                     | Coasting stop: cuts the power, the robot rolls to a halt  |
+| `shield.brake()`                    | Hard stop: locks both motors                              |
+
+### `drive(throttle, steering)`
+
+Drives a two-wheeled car like a joystick. Both inputs run from -255 to 255:
+
+- `throttle`: forward (positive) or backward (negative)
+- `steering`: right (positive) or left (negative)
+
+To make the car easier to drive, `drive()` shapes the inputs first:
+
+1. **Values under 10 count as 0**, so a thumb resting near the joystick's center doesn't creep or turn the car.
+2. **Steering is squared**, keeping its sign. Small pushes give fine corrections and a full push still turns fully: half a push turns a quarter as hard.
+3. **Turning uses 60% of the motors' power**, so a full sideways push turns at 153 instead of 255. Change it with `shield.setTurnSpeed(percent)`: lower for gentler steering, 100 for the full range.
+
+Then it mixes them into wheel speeds: left = throttle + turn, right = throttle − turn. When a wheel would go past full speed, both wheels slow down by the same factor, so the turn keeps its shape. With no throttle, steering spins the car in place.
+
+| Sideways push, at full throttle | Left, right wheel |
+|---------------------------------|-------------------|
+| None                            | 255, 255          |
+| Half                            | 255, 188 (gentle curve) |
+| Full                            | 255, 63 (sharp turn)    |
+| Full, with no throttle          | 153, −153 (spins in place) |
+
+To set each wheel's speed exactly, without any shaping, use `setMotors()`.
+
+The MicroBlue app's D-Pad, Joystick and Tilt send `x,y` with each part from 0 to 1023, so map them first:
+
+```cpp
+shield.drive(map(y, 0, 1023, -255, 255), map(x, 0, 1023, -255, 255));
+```
+
+### Motors that turn the wrong way
+
+Call these in `setup()`, after `begin()`:
+
+| Call                   | Use it when                                                  |
+|------------------------|--------------------------------------------------------------|
+| `shield.invertLeft()`  | The motor on the shield's left output turns the wrong way    |
+| `shield.invertRight()` | The motor on the shield's right output turns the wrong way   |
+| `shield.swapMotors()`  | The left and right motors are plugged in the other way round |
+
+## Upgrading from 0.x
+
+Version 1.0.0 puts everything in the `SnappyXOShield` class, so sketches written for 0.x need these changes:
+
+| 0.x                                   | 1.0                                                          |
+|---------------------------------------|--------------------------------------------------------------|
+| `initMotors();`                       | `SnappyXOShield shield(SnappyXOShield::V3);` above `setup()`, then `shield.begin();` |
+| `initMotors(true, false, false);`     | `shield.begin();` then `shield.invertLeft();`                |
+| `initMotors(false, true, false);`     | `shield.begin();` then `shield.invertRight();`               |
+| `initMotors(false, false, true);`     | `shield.begin();` then `shield.swapMotors();`                |
+| `#define SNAPPYXO_SHIELDV2`           | `SnappyXOShield shield(SnappyXOShield::V2);`                 |
+| `forward()`, `reverse()`, `brake()`   | `shield.forward()`, `shield.reverse()`, `shield.brake()`     |
+| `turnLeft()`, `turnRight()`           | `shield.spinLeft()`, `shield.spinRight()`                    |
+| `pause()`                             | `shield.stop()`                                              |
+| `_motorWrite(left, right)`            | `shield.setMotors(left, right)`                              |
+| `drive(throttle, steering)`, each -512 to 512 | `shield.drive(throttle, steering)`, each -255 to 255. From the MicroBlue app, `map(value, 0, 1023, -255, 255)` |
 
 ## Compatibility
 
-- **SnappyXO Motor Shield:** v3.0.0+ (default)
-- **SnappyXO Motor Shield:** v2.0.0+ (if using `#define SNAPPYXO_SHIELDV2`)
+- **SnappyXO Motor Shield:** v3 and v2
+- **Boards:** any Arduino, since the library only uses `pinMode()`, `digitalWrite()` and `analogWrite()`. The examples are compiled for the UNO R3 and UNO R4 WiFi on every change.
+
+## License
+
+MIT License — Copyright (c) 2026 A+ Mobile Solutions Inc. See [LICENSE](LICENSE) for details.
