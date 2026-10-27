@@ -70,7 +70,27 @@ void SnappyXOShield::setMotors(int left, int right) {
 	_writeMotor(_rightIn2, _rightIn1, _rightEnable, right);
 }
 
+namespace {
+// Squares v while keeping its sign and its -255..255 range.
+int squareInput(int v) {
+	long sq = (long)v * v;
+	return v < 0 ? -sq / 255 : sq / 255;
+}
+}  // namespace
+
 void SnappyXOShield::drive(int throttle, int steering) {
+	drive(throttle, steering, true, true);
+}
+
+void SnappyXOShield::drive(int throttle, int steering, bool squareThrottle,
+						   bool squareSteering) {
+	if (squareThrottle) {
+		throttle = squareInput(throttle);
+	}
+	if (squareSteering) {
+		steering = squareInput(steering);
+	}
+
 	int left = throttle + steering;
 	int right = throttle - steering;
 
