@@ -73,7 +73,7 @@ void SnappyXOShield::setMotors(int left, int right) {
 namespace {
 // Squares v while keeping its sign and its -255..255 range.
 int squareInput(int v) {
-	long sq = (long)v * v;
+	int32_t sq = (int32_t)v * v;
 	return v < 0 ? -sq / 255 : sq / 255;
 }
 }  // namespace
