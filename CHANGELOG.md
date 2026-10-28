@@ -1,8 +1,8 @@
 # Changelog
 
-## 1.0.0 (unreleased)
+## 0.3.0 (2026-10-26)
 
-**Upgrading from 0.2.1.** Sketches written for 0.x need changes; the README's "Upgrading from 0.x" section lists each one.
+**Upgrading from 0.2.1.** Sketches written for 0.2.x and earlier need changes; the README's "Upgrading from 0.2.x" section lists each one.
 
 - Everything is now in the `SnappyXOShield` class: declare `SnappyXOShield shield(SnappyXOShield::V3);` above `setup()` and call `shield.begin()`, `shield.forward()` and so on. The library no longer defines global functions such as `forward()` and `drive()`, which clashed with functions of the same name in sketches: a sketch's own `drive()` (like the one in MicroBlue's drive example) failed to compile, and a sketch's `turnRight(float)` called as `turnRight(90)` ran the library's `turnRight(int speed)` instead.
 - Every sketch names its shield version, `SnappyXOShield shield(SnappyXOShield::V3);` or `SnappyXOShield shield(SnappyXOShield::V2);`. There's no default. This replaces `#define SNAPPYXO_SHIELDV2` before the `#include`.

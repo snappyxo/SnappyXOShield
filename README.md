@@ -31,8 +31,6 @@ void loop() {
 
 See [`examples/BasicMotorControl/`](examples/BasicMotorControl/BasicMotorControl.ino) for the full sketch, and [`examples/MicroBlueDrive/`](examples/MicroBlueDrive/MicroBlueDrive.ino) to drive from the MicroBlue app on an UNO R4 WiFi.
 
-To see what the library does inside, [`examples/BasicMotorControlNoLibrary/`](examples/BasicMotorControlNoLibrary/BasicMotorControlNoLibrary.ino) has the same `loop()` as BasicMotorControl, with `forward()`, `drive()` and the other functions written out using only `pinMode()`, `digitalWrite()` and `analogWrite()`. It also explains what each motor driver pin does.
-
 ## Shields
 
 |                             | v3                          | v2                            |
@@ -106,11 +104,11 @@ Call these in `setup()`, after `begin()`:
 | `shield.invertRight()` | The motor on the shield's right output turns the wrong way   |
 | `shield.swapMotors()`  | The left and right motors are plugged in the other way round |
 
-## Upgrading from 0.x
+## Upgrading from 0.2.x
 
-Version 1.0.0 puts everything in the `SnappyXOShield` class, so sketches written for 0.x need these changes:
+Version 0.3.0 puts everything in the `SnappyXOShield` class, so sketches written for 0.2.x and earlier need these changes:
 
-| 0.x                                   | 1.0                                                          |
+| 0.2.x                                 | 0.3.0                                                        |
 |---------------------------------------|--------------------------------------------------------------|
 | `initMotors();`                       | `SnappyXOShield shield(SnappyXOShield::V3);` above `setup()`, then `shield.begin();` |
 | `initMotors(true, false, false);`     | `shield.begin();` then `shield.invertLeft();`                |
