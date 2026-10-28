@@ -60,7 +60,6 @@ Speeds run from **-255** (full backward) to **255** (full forward), and 0 stops.
 | `shield.spinRight()`, `spinRight(speed)`| Spins right in place                                  |
 | `shield.setMotors(left, right)`     | Sets each wheel's speed (-255 to 255)                     |
 | `shield.drive(throttle, steering)`  | Joystick-style driving, see below                         |
-| `shield.setTurnSpeed(percent)`      | How much of the motors' power `drive()` uses for turning, 0–100 (60 when not set). Lower makes steering gentler |
 | `shield.stop()`                     | Coasting stop: cuts the power, the robot rolls to a halt  |
 | `shield.brake()`                    | Hard stop: locks both motors                              |
 
@@ -71,22 +70,18 @@ Drives a two-wheeled car like a joystick. Both inputs run from -255 to 255:
 - `throttle`: forward (positive) or backward (negative)
 - `steering`: right (positive) or left (negative)
 
-To make the car easier to drive, `drive()` shapes the inputs first:
+To make the car easier to drive, `drive()` squares both inputs first, keeping their signs. Small pushes give fine control and a full push still reaches full speed: half a push (128) becomes a quarter (64).
 
-1. **Values under 10 count as 0**, so a thumb resting near the joystick's center doesn't creep or turn the car.
-2. **Steering is squared**, keeping its sign. Small pushes give fine corrections and a full push still turns fully: half a push turns a quarter as hard.
-3. **Turning uses 60% of the motors' power**, so a full sideways push turns at 153 instead of 255. Change it with `shield.setTurnSpeed(percent)`: lower for gentler steering, 100 for the full range.
-
-Then it mixes them into wheel speeds: left = throttle + turn, right = throttle − turn. When a wheel would go past full speed, both wheels slow down by the same factor, so the turn keeps its shape. With no throttle, steering spins the car in place.
+Then it mixes them into wheel speeds: left = throttle + steering, right = throttle − steering. When a wheel would go past full speed, both wheels slow down by the same factor, so the turn keeps its shape. With no throttle, steering spins the car in place.
 
 | Sideways push, at full throttle | Left, right wheel |
 |---------------------------------|-------------------|
 | None                            | 255, 255          |
-| Half                            | 255, 188 (gentle curve) |
-| Full                            | 255, 63 (sharp turn)    |
-| Full, with no throttle          | 153, −153 (spins in place) |
+| Half                            | 255, 152 (gentle curve) |
+| Full                            | 255, 0 (sharp turn)     |
+| Full, with no throttle          | 255, −255 (spins in place) |
 
-To set each wheel's speed exactly, without any shaping, use `setMotors()`.
+To use an input as it is, without squaring, pass `false` for it: `shield.drive(throttle, steering, squareThrottle, squareSteering)`. For example, `shield.drive(throttle, steering, true, false)` squares the throttle only. To set each wheel's speed exactly, use `setMotors()`.
 
 The MicroBlue app's D-Pad, Joystick and Tilt send `x,y` with each part from 0 to 1023, so map them first:
 

@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- README: the `drive()` section described an earlier version, with a dead zone, a 60% turn speed and `setTurnSpeed()`, none of which 0.3.0 has. It now says both inputs are squared and shows `drive(throttle, steering, squareThrottle, squareSteering)`.
+
 ## 0.3.0 (2026-10-26)
 
 **Upgrading from 0.2.1.** Sketches written for 0.2.x and earlier need changes; the README's "Upgrading from 0.2.x" section lists each one.
