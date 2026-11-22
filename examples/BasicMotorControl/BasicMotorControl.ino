@@ -12,9 +12,9 @@ void setup() {
   shield.begin();  // sets up the motor pins
 
   // If a wheel turns the wrong way, uncomment the line that fixes it:
-  // shield.invertLeft();   // the left motor turns backward when it should go forward
-  // shield.invertRight();  // the right motor turns backward when it should go forward
-  // shield.swapMotors();   // the left and right motors are plugged in the other way round
+  // shield.invertLeft();   // the left motor (M1) turns backward when it should go forward
+  // shield.invertRight();  // the right motor (M2) turns backward when it should go forward
+  // shield.swapMotors();   // the left wheel's motor is plugged into M2, the right wheel's into M1
 }
 
 void loop() {

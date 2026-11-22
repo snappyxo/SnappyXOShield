@@ -37,13 +37,15 @@ See [`examples/BasicMotorControl/`](examples/BasicMotorControl/BasicMotorControl
 |-----------------------------|-----------------------------|-------------------------------|
 | Board                       | UNO R4 WiFi, or UNO R3      | UNO R3 with an HM-10 module   |
 | In the sketch               | `SnappyXOShield shield(SnappyXOShield::V3);` | `SnappyXOShield shield(SnappyXOShield::V2);` |
-| Left motor IN1 / IN2 / PWM  | 4 / 7 / 5                   | 4 / 5 / 6                     |
-| Right motor IN1 / IN2 / PWM | 8 / 9 / 6                   | 12 / 13 / 11                  |
+| Left motor (M1) IN1 / IN2 / EN  | 4 / 7 / 5               | 4 / 5 / 6                     |
+| Right motor (M2) IN1 / IN2 / EN | 8 / 9 / 6               | 12 / 13 / 11                  |
 | Servo headers               | A0, A1, A2, A3              | 9, 10, A0, A1                 |
+
+The shield labels its motor outputs M1 and M2. The library calls them left and right: M1 is the left motor, M2 the right one.
 
 The library sets up the motor pins only, and a sketch shouldn't use them for anything else. The servo headers are listed for reference: use the pin number printed on the board, for example `myServo.attach(A0);`.
 
-On the UNO R3, the IRremote library takes over the timer that makes the PWM on pin 11, the v2 shield's right motor speed pin, so an IR receiver and the v2 shield's motors don't work together. The v3 shield's speed pins (5 and 6) aren't affected.
+On the UNO R3, the IRremote library takes over the timer that makes the PWM on pin 11, the v2 shield's right motor (M2) EN (speed) pin, so an IR receiver and the v2 shield's motors don't work together. The v3 shield's EN pins (5 and 6) aren't affected.
 
 ## API
 
@@ -95,9 +97,9 @@ Call these in `setup()`, after `begin()`:
 
 | Call                   | Use it when                                                  |
 |------------------------|--------------------------------------------------------------|
-| `shield.invertLeft()`  | The motor on the shield's left output turns the wrong way    |
-| `shield.invertRight()` | The motor on the shield's right output turns the wrong way   |
-| `shield.swapMotors()`  | The left and right motors are plugged in the other way round |
+| `shield.invertLeft()`  | The motor on M1, the shield's left output, turns the wrong way |
+| `shield.invertRight()` | The motor on M2, the shield's right output, turns the wrong way |
+| `shield.swapMotors()`  | The motors are plugged in the other way round: the left wheel's into M2, the right wheel's into M1 |
 
 ## Upgrading from 0.2.x
 

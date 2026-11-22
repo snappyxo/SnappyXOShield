@@ -65,7 +65,8 @@ void SnappyXOShield::setMotors(int left, int right) {
 		right = -right;
 	}
 
-	// Forward is IN1 high on the left motor, but IN2 high on the right motor
+	// Forward is IN1 high on the left motor (M1), but IN2 high on the right
+	// motor (M2)
 	_writeMotor(_leftIn1, _leftIn2, _leftEnable, left);
 	_writeMotor(_rightIn2, _rightIn1, _rightEnable, right);
 }

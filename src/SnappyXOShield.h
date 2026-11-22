@@ -36,8 +36,9 @@ class SnappyXOShield {
 	void begin();
 
 	// For a wheel that turns the wrong way. invertLeft() and invertRight()
-	// reverse the motor on the shield's left or right output; swapMotors()
-	// swaps the two outputs, for motors plugged in the other way round.
+	// reverse the motor on the shield's left output (M1 on the board) or
+	// right output (M2); swapMotors() swaps the two outputs, for motors
+	// plugged in the other way round.
 	void invertLeft(bool invert = true);
 	void invertRight(bool invert = true);
 	void swapMotors(bool swap = true);
