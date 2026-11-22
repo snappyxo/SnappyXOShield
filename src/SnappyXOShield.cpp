@@ -3,17 +3,29 @@
 
 #include "SnappyXOShield.h"
 
+// The pins of each shield version, in order from V2. A new version is a new
+// row here and a new name in Version.
+const SnappyXOShield::PinMap SnappyXOShield::PINS[] PROGMEM = {
+	//  IN1  IN2  EN
+	{{4, 5, 6},      // V2: left output, M1
+	 {12, 13, 11}},  //     right output, M2
+	{{4, 7, 5},      // V3: left output, M1
+	 {8, 9, 6}},     //     right output, M2
+};
+
+const SnappyXOShield::PinMap *SnappyXOShield::_pinMap() const {
+	return &PINS[_version - V2];
+}
+
 SnappyXOShield::SnappyXOShield(Version version)
-	: _invertLeft(false), _invertRight(false), _swap(false) {
-	if (version == V2) {
-		_leftIn1 = 4, _leftIn2 = 5, _leftEnable = 6;
-		_rightIn1 = 12, _rightIn2 = 13, _rightEnable = 11;
-	} else if (version == V3) {
-		_leftIn1 = 4, _leftIn2 = 7, _leftEnable = 5;
-		_rightIn1 = 8, _rightIn2 = 9, _rightEnable = 6;
-	} else {
-		// NOTE: Add any future shield version code here
-	}
+	: _version(version), _invertLeft(false), _invertRight(false), _swap(false) {
+	const PinMap *pins = _pinMap();
+	_leftIn1 = pgm_read_byte(&pins->left.in1);
+	_leftIn2 = pgm_read_byte(&pins->left.in2);
+	_leftEnable = pgm_read_byte(&pins->left.enable);
+	_rightIn1 = pgm_read_byte(&pins->right.in1);
+	_rightIn2 = pgm_read_byte(&pins->right.in2);
+	_rightEnable = pgm_read_byte(&pins->right.enable);
 }
 
 void SnappyXOShield::begin() {

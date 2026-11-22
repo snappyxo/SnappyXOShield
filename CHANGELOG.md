@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Each shield version's motor pins are now one row of a table kept in flash, so a future shield version is one more row.
 - Fixed: `drive()` inputs beyond -255 to 255 wrapped around on the UNO R3 once squared, so `drive(3000, 0)` ran full reverse. They're now limited to -255 to 255 first, as the README says.
 
 ## 0.3.2 (2026-11-07)

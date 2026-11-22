@@ -68,6 +68,22 @@ class SnappyXOShield {
 	void brake();  // Hard stop: lock both motors
 
    private:
+	// The pins of one motor output
+	struct OutputPins {
+		uint8_t in1, in2, enable;
+	};
+	// The pins one shield version uses: its left output, M1 on the board,
+	// and its right output, M2
+	struct PinMap {
+		OutputPins left, right;
+	};
+	// One row per version, in order from V2, kept in flash
+	static const PinMap PINS[];
+	// This object's row. It's in flash: read it with pgm_read_byte().
+	const PinMap *_pinMap() const;
+
+	// Each object's own
+	uint8_t _version;
 	uint8_t _leftIn1, _leftIn2, _leftEnable;
 	uint8_t _rightIn1, _rightIn2, _rightEnable;
 	bool _invertLeft, _invertRight, _swap;
