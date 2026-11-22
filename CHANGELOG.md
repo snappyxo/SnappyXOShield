@@ -3,6 +3,7 @@
 ## Unreleased
 
 - README: the `drive()` section described an earlier version, with a dead zone, a 60% turn speed and `setTurnSpeed()`, none of which 0.3.0 has. It now says both inputs are squared and shows `drive(throttle, steering, squareThrottle, squareSteering)`.
+- Fixed: `drive()` inputs beyond -255 to 255 wrapped around on the UNO R3 once squared, so `drive(3000, 0)` ran full reverse. They're now limited to -255 to 255 first, as the README says.
 
 ## 0.3.0 (2026-10-26)
 

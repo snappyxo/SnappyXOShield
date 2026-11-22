@@ -80,6 +80,10 @@ int squareInput(int v) {
 
 void SnappyXOShield::drive(int throttle, int steering, bool squareThrottle,
 						   bool squareSteering) {
+	// Limited first: squared, a bigger input would overflow an UNO R3's int
+	throttle = constrain(throttle, -255, 255);
+	steering = constrain(steering, -255, 255);
+
 	if (squareThrottle) {
 		throttle = squareInput(throttle);
 	}
