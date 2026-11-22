@@ -208,9 +208,9 @@ float SnappyXOShield::_wheelDiameter = 61;  // mm
 float SnappyXOShield::_wheelSpacing = 96;   // mm
 float SnappyXOShield::_gearRatio = 120;
 float SnappyXOShield::_ratedRPM = 160;  // the wheel's speed at full power
-float SnappyXOShield::_positionGains[3];  // all 0: off
+float SnappyXOShield::_speedGains[3];  // all 0: off
 float SnappyXOShield::_headingGains[3];
-float SnappyXOShield::_speedGains[3];
+float SnappyXOShield::_positionGains[3];
 Print *SnappyXOShield::_plot = nullptr;  // where plotMoves() prints, if anywhere
 
 void SnappyXOShield::beginEncoders() {
@@ -330,14 +330,14 @@ void SnappyXOShield::setRatedRPM(float rpm) {
 	}
 }
 
-void SnappyXOShield::setPositionPID(float kp, float ki, float kd) {
-	setGains(_positionGains, kp, ki, kd);
+void SnappyXOShield::setSpeedPID(float kp, float ki, float kd) {
+	setGains(_speedGains, kp, ki, kd);
 }
 void SnappyXOShield::setHeadingPID(float kp, float ki, float kd) {
 	setGains(_headingGains, kp, ki, kd);
 }
-void SnappyXOShield::setSpeedPID(float kp, float ki, float kd) {
-	setGains(_speedGains, kp, ki, kd);
+void SnappyXOShield::setPositionPID(float kp, float ki, float kd) {
+	setGains(_positionGains, kp, ki, kd);
 }
 void SnappyXOShield::plotMoves(Print &output) {
 	_plot = &output;

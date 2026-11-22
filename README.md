@@ -137,9 +137,9 @@ If you call `swapMotors()` because the motors are plugged in the other way round
 | `shield.setWheelSpacing(mm)`               | From the middle of one wheel to the middle of the other, in millimeters, 96 if not set. Only the turns use it |
 | `shield.setGearRatio(ratio)`               | How many times the motor turns for one turn of the wheel, for example `48` for a 48:1 gearbox. 120 if not set |
 | `shield.setRatedRPM(rpm)`                  | The wheels' speed at full power, from the motor's datasheet, 160 if not set. Without the speed controller, the moves guess the power for a speed from it |
-| `shield.setPositionPID(kp, ki, kd)`        | Turns on the position controller for the moves: see [Tuning your robot with PID](#tuning-your-robot-with-pid) |
+| `shield.setSpeedPID(kp, ki, kd)`           | Turns on the speed controllers for the moves: see [Tuning your robot with PID](#tuning-your-robot-with-pid) |
 | `shield.setHeadingPID(kp, ki, kd)`         | Turns on the heading controller                              |
-| `shield.setSpeedPID(kp, ki, kd)`           | Turns on the speed controllers                               |
+| `shield.setPositionPID(kp, ki, kd)`        | Turns on the position controller                             |
 | `shield.plotMoves(Serial)`                 | Prints what the controllers see during moves, for the Serial Plotter |
 
 All four moves take the wheels' speed as an optional last number, `rpm`, in turns per minute, 60 if left out: `shield.driveInches(24, 90)`. Its sign is ignored: the distance or angle gives the direction. It's the same unit `leftRPM()` and `rightRPM()` measure. Without the speed controller, the library guesses the motor power for that speed from `setRatedRPM()`, so the wheels may turn slower. With it, they're held at that speed.
@@ -192,19 +192,27 @@ Once the moves land on their target counts, what's left is the robot's measureme
 
 ### Tuning your robot with PID
 
-Robots differ in weight, battery, motors and floor, so the library doesn't come tuned: each robot gets its own PID gains, set in `setup()`. There are three controllers, all off until a sketch sets them:
+Robots differ in weight, battery, motors and floor, so the library doesn't come tuned: each robot gets its own PID gains, set in `setup()`. There are three controllers, all off until a sketch sets them, listed in the order to tune them:
 
 | Controller | Call | The error it measures | What it fixes |
 |------------|------|-----------------------|---------------|
-| Position   | `setPositionPID(kp, ki, kd)` | Pulses still to go | Slows down near the end and settles on the target, backing up if it rolls past |
-| Heading    | `setHeadingPID(kp, ki, kd)` | How many pulses one wheel is ahead of the other | Keeps the wheels together, so the robot drives straight and spins on the spot |
 | Speed      | `setSpeedPID(kp, ki, kd)` | Target speed minus measured speed, for each wheel, in RPM | Holds the speed asked for instead of guessing the power, whatever the battery or the robot's weight |
+| Heading    | `setHeadingPID(kp, ki, kd)` | How many pulses one wheel is ahead of the other | Keeps the wheels together, so the robot drives straight and spins on the spot |
+| Position   | `setPositionPID(kp, ki, kd)` | Pulses still to go | Slows down near the end and settles on the target, backing up if it rolls past |
 
-Leave out `ki` and `kd` for P only, for example `shield.setPositionPID(0.5);`. Setting all three to 0 turns a controller off again, and a call with a negative gain is ignored.
+Leave out `ki` and `kd` for P only, for example `shield.setHeadingPID(0.3);`. Setting all three to 0 turns a controller off again, and a call with a negative gain is ignored.
 
 The position and heading controllers ask for each wheel's speed, in RPM. Without the speed controller, the library guesses the power for that speed. With it, a speed controller on each wheel measures the speed and finds the power that holds it.
 
+```
+pulses still to go  ──► Position ──┐
+                                   ├──► each wheel's target RPM ──► Speed ──► motor power
+left wheel ahead by ──► Heading  ──┘
+```
+
 The heading controller works with or without the speed controller, but the position controller needs it. Near the end of a move, the position controller asks for speeds so slow that a guessed power can't turn the motors at all, so the robot stops short. The speed controller notices the wheels aren't turning and pushes harder until they do. Turning it on changes how the robot responds, so retune heading after turning it on: it usually needs a smaller gain.
+
+The order matters because the speed controller sits next to the motors and the other two work through it. The controllers work out their values from the outside in, position and heading first, then speed, and you tune them from the inside out. Heading and position only ask for wheel speeds, so how they behave depends on how well the speed controller delivers them. Tune it first, and retune heading and position whenever you change it. As a rule, an outer controller should react more slowly than the one it works through: if heading or position pushes harder than the speed controller can follow, they fight and the robot wobbles. That's why both need smaller gains once the speed controller is on. The order of the `set…PID()` lines in `setup()` doesn't matter, since each one only stores its gains, but this README and the examples list them in tuning order.
 
 Tune one controller at a time, in this order, with [`examples/PIDSquare/`](examples/PIDSquare/PIDSquare.ino):
 

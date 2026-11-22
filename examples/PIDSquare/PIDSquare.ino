@@ -42,9 +42,9 @@
 SnappyXOShield shield(SnappyXOShield::V3);  // the shield version printed on the board: V3 or V2
 
 // PID gains: tune these, one controller at a time. 0 is off.
-float positionKp = 0, positionKi = 0, positionKd = 0;
-float headingKp = 0, headingKi = 0, headingKd = 0;
 float speedKp = 0, speedKi = 0, speedKd = 0;
+float headingKp = 0, headingKi = 0, headingKd = 0;
+float positionKp = 0, positionKi = 0, positionKd = 0;
 int rpm = 60;  // the wheels' speed, in turns per minute
 
 const bool PLOT = false;  // true: the Serial Plotter instead of the table
@@ -74,9 +74,9 @@ void setup() {
   shield.setGearRatio(GEAR_RATIO);
   shield.setRatedRPM(RATED_RPM);
 
-  shield.setPositionPID(positionKp, positionKi, positionKd);
-  shield.setHeadingPID(headingKp, headingKi, headingKd);
   shield.setSpeedPID(speedKp, speedKi, speedKd);
+  shield.setHeadingPID(headingKp, headingKi, headingKd);
+  shield.setPositionPID(positionKp, positionKi, positionKd);
   if (PLOT) {
     shield.plotMoves(Serial);
   }

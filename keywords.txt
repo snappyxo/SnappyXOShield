@@ -31,9 +31,9 @@ setWheelDiameter	KEYWORD2
 setWheelSpacing	KEYWORD2
 setGearRatio	KEYWORD2
 setRatedRPM	KEYWORD2
-setPositionPID	KEYWORD2
-setHeadingPID	KEYWORD2
 setSpeedPID	KEYWORD2
+setHeadingPID	KEYWORD2
+setPositionPID	KEYWORD2
 plotMoves	KEYWORD2
 
 # Constants (LITERAL1)

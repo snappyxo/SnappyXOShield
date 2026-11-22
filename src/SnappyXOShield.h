@@ -142,22 +142,22 @@ class SnappyXOShield {
 	// Each robot is different, so these are off until a sketch sets its own
 	// robot's gains: kp, then ki and kd, which can be left out for P only.
 	// All 0 turns a controller off again. A call with a negative gain is
-	// ignored.
+	// ignored. Listed in the order to tune them: speed, heading, position.
 
-	// Slows down near the end of a move and settles on the target, backing up
-	// if it rolls past. The error is the pulses still to go, and it asks for
-	// a wheel speed in RPM.
-	void setPositionPID(float kp, float ki = 0, float kd = 0);
-	// Keeps the wheels together, so the robot drives straight and spins on
-	// the spot. The error is how many pulses one wheel is ahead of the other,
-	// and it asks for a difference in wheel speed, in RPM.
-	void setHeadingPID(float kp, float ki = 0, float kd = 0);
 	// Holds each wheel at the speed asked for, whatever the battery or the
 	// robot's weight, instead of guessing the power. The error is the target
 	// speed minus the measured one, in RPM. The position controller needs
 	// it: near the end, it asks for speeds too slow for a guessed power to
 	// turn the wheels at all.
 	void setSpeedPID(float kp, float ki = 0, float kd = 0);
+	// Keeps the wheels together, so the robot drives straight and spins on
+	// the spot. The error is how many pulses one wheel is ahead of the other,
+	// and it asks for a difference in wheel speed, in RPM.
+	void setHeadingPID(float kp, float ki = 0, float kd = 0);
+	// Slows down near the end of a move and settles on the target, backing up
+	// if it rolls past. The error is the pulses still to go, and it asks for
+	// a wheel speed in RPM.
+	void setPositionPID(float kp, float ki = 0, float kd = 0);
 
 	// Prints what the controllers see during moves, ten times a second, for
 	// the Serial Plotter: shield.plotMoves(Serial);
@@ -189,7 +189,7 @@ class SnappyXOShield {
 	// encoder motors need room for them.
 	static bool _encodersOn;
 	static float _wheelDiameter, _wheelSpacing, _gearRatio, _ratedRPM;
-	static float _positionGains[3], _headingGains[3], _speedGains[3];  // kp, ki, kd
+	static float _speedGains[3], _headingGains[3], _positionGains[3];  // kp, ki, kd
 	static Print *_plot;
 
 	void _writeMotor(uint8_t forwardPin, uint8_t backwardPin, uint8_t enablePin,
