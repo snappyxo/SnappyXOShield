@@ -2,8 +2,17 @@
 
 ## Unreleased
 
-- README: the `drive()` section described an earlier version, with a dead zone, a 60% turn speed and `setTurnSpeed()`, none of which 0.3.0 has. It now says both inputs are squared and shows `drive(throttle, steering, squareThrottle, squareSteering)`.
 - Fixed: `drive()` inputs beyond -255 to 255 wrapped around on the UNO R3 once squared, so `drive(3000, 0)` ran full reverse. They're now limited to -255 to 255 first, as the README says.
+
+## 0.3.2 (2026-11-07)
+
+- `library.properties` now has the release's version number. It still said 0.3.0.
+
+## 0.3.1 (2026-10-28)
+
+- Fixed: `drive()` overflowed on the UNO R3 when throttle and steering together passed full speed, giving wrong wheel speeds. The wheel speeds are now worked out with 32-bit numbers.
+- README: the `drive()` section described an earlier version, with a dead zone, a 60% turn speed and `setTurnSpeed()`, none of which 0.3.0 has. It now says both inputs are squared and shows `drive(throttle, steering, squareThrottle, squareSteering)`.
+- `keywords.txt` no longer lists `setTurnSpeed`, which was removed in 0.3.0.
 
 ## 0.3.0 (2026-10-26)
 
