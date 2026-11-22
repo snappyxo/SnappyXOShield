@@ -2,7 +2,9 @@
 
 ## Unreleased
 
-- Each shield version's motor pins are now one row of a table kept in flash, so a future shield version is one more row.
+- New: optional encoder motors, on either shield: the left wheel's encoder A and B outputs on pins 2 and A2, the right wheel's on 3 and A3. `beginEncoders()` starts counting. `leftCount()`, `rightCount()` and `resetCounts()` tell how far each wheel has turned (960 pulses per wheel turn with a 120:1 gearbox), `leftRPM()` and `rightRPM()` how fast. `driveInches()` and `driveCm()` drive straight for a distance. `spinTurn()` and `pivotTurn()` turn by an angle, spinning in place or pivoting on one wheel. The moves take the wheels' speed in RPM, 60 if left out, and brake when they reach the distance. `setPositionPID()`, `setHeadingPID()` and `setSpeedPID()` turn on PID control with each robot's own gains, off until set: the position controller settles on the target, the heading controller keeps the wheels together, and the speed controllers hold each wheel at the speed asked for, which is otherwise guessed from the motor's rated speed. `plotMoves()` helps tune them. `setWheelDiameter()`, `setWheelSpacing()`, `setGearRatio()` and `setRatedRPM()` fit them to the robot. `swapMotors()` swaps the encoders too. Sketches without encoders need no changes.
+- `library.properties` sets `dot_a_linkage=true`, so the encoder code and its settings are only linked into sketches that use them. Sketches without encoders barely grow: on the UNO R3, `BasicMotorControl` takes 1750 bytes of flash and 19 bytes of RAM, against 1668 and 18 in 0.3.2. Without `dot_a_linkage`, it would take 1934 and 59.
+- Each shield version's pins, for the motors and the encoders, are now one row of a table kept in flash, so a future shield version is one more row.
 - Fixed: `drive()` inputs beyond -255 to 255 wrapped around on the UNO R3 once squared, so `drive(3000, 0)` ran full reverse. They're now limited to -255 to 255 first, as the README says.
 
 ## 0.3.2 (2026-11-07)

@@ -6,11 +6,11 @@
 // The pins of each shield version, in order from V2. A new version is a new
 // row here and a new name in Version.
 const SnappyXOShield::PinMap SnappyXOShield::PINS[] PROGMEM = {
-	//  IN1  IN2  EN
-	{{4, 5, 6},      // V2: left output, M1
-	 {12, 13, 11}},  //     right output, M2
-	{{4, 7, 5},      // V3: left output, M1
-	 {8, 9, 6}},     //     right output, M2
+	//  IN1  IN2  EN  encoder A, B
+	{{4, 5, 6, 2, A2},      // V2: left output, M1
+	 {12, 13, 11, 3, A3}},  //     right output, M2
+	{{4, 7, 5, 2, A2},      // V3: left output, M1
+	 {8, 9, 6, 3, A3}},     //     right output, M2
 };
 
 const SnappyXOShield::PinMap *SnappyXOShield::_pinMap() const {
