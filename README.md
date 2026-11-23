@@ -29,7 +29,7 @@ void loop() {
 }
 ```
 
-See [`examples/BasicMotorControl/`](examples/BasicMotorControl/BasicMotorControl.ino) for the full sketch, and [`examples/MicroBlueDrive/`](examples/MicroBlueDrive/MicroBlueDrive.ino) to drive from the MicroBlue app on an UNO R4 WiFi. For encoder motors, see [`EncoderTest`](examples/EncoderTest/EncoderTest.ino), [`TraceShape`](examples/TraceShape/TraceShape.ino), [`PIDSquare`](examples/PIDSquare/PIDSquare.ino) and [`PIDSpeedControl`](examples/PIDSpeedControl/PIDSpeedControl.ino).
+See [`examples/BasicMotorControl/`](examples/BasicMotorControl/BasicMotorControl.ino) for the full sketch, and [`examples/MicroBlueDrive/`](examples/MicroBlueDrive/MicroBlueDrive.ino) to drive from the MicroBlue app on an UNO R4 WiFi. For encoder motors, see [`EncoderTest`](examples/Encoders/EncoderTest/EncoderTest.ino), [`TraceShape`](examples/Encoders/TraceShape/TraceShape.ino), [`PIDSquare`](examples/Encoders/PIDSquare/PIDSquare.ino) and [`PIDSpeedControl`](examples/Encoders/PIDSpeedControl/PIDSpeedControl.ino).
 
 ## Shields
 
@@ -117,7 +117,7 @@ Wire each encoder by the labels on its port. The pins are the same on the v3 and
 | 5V (or VCC) | 5V         | 5V          |
 | GND         | GND        | GND         |
 
-A2 and A3 are the board's pins of that name, not the encoder's A. The A outputs must go to pins 2 and 3: they're the pins that can interrupt the sketch on every pulse, so none is missed. Upload [`examples/EncoderTest/`](examples/EncoderTest/EncoderTest.ino) to set up the robot. It turns each wheel and asks in the Serial Monitor which wheel turned and which way, then turns it backward to check its B wire. From your answers and the encoder counts, it works out what's wired wrong and says exactly what to change. At the end it prints the lines your sketches need in `setup()`, such as `shield.invertLeft();`, if any.
+A2 and A3 are the board's pins of that name, not the encoder's A. The A outputs must go to pins 2 and 3: they're the pins that can interrupt the sketch on every pulse, so none is missed. Upload [`examples/Encoders/EncoderTest/`](examples/Encoders/EncoderTest/EncoderTest.ino) to set up the robot. It turns each wheel and asks in the Serial Monitor which wheel turned and which way, then turns it backward to check its B wire. From your answers and the encoder counts, it works out what's wired wrong and says exactly what to change. At the end it prints the lines your sketches need in `setup()`, such as `shield.invertLeft();`, if any.
 
 If you call `swapMotors()` because the motors are plugged in the other way round, it swaps the encoders too.
 
@@ -188,7 +188,7 @@ Once the moves land on their target counts, what's left is the robot's measureme
 - Turns too little: make the wheel spacing bigger, for example `shield.setWheelSpacing(100);`. Turns too far: smaller. Spin and pivot turns slip differently, so if one is right and the other isn't, call `setWheelSpacing()` with each one's value before it.
 - Drives too short: make the wheel diameter smaller. Drives too far: bigger.
 
-[`examples/TraceShape/`](examples/TraceShape/TraceShape.ino) drives a U shape.
+[`examples/Encoders/TraceShape/`](examples/Encoders/TraceShape/TraceShape.ino) drives a U shape.
 
 ### Tuning your robot with PID
 
@@ -214,7 +214,7 @@ The heading controller works with or without the speed controller, but the posit
 
 The order matters because the speed controller sits next to the motors and the other two work through it. The controllers work out their values from the outside in, position and heading first, then speed, and you tune them from the inside out. Heading and position only ask for wheel speeds, so how they behave depends on how well the speed controller delivers them. Tune it first, and retune heading and position whenever you change it. As a rule, an outer controller should react more slowly than the one it works through: if heading or position pushes harder than the speed controller can follow, they fight and the robot wobbles. That's why both need smaller gains once the speed controller is on. The order of the `set…PID()` lines in `setup()` doesn't matter, since each one only stores its gains, but this README and the examples list them in tuning order.
 
-Tune one controller at a time, in this order, with [`examples/PIDSquare/`](examples/PIDSquare/PIDSquare.ino):
+Tune one controller at a time, in this order, with [`examples/Encoders/PIDSquare/`](examples/Encoders/PIDSquare/PIDSquare.ino):
 
 1. Run `EncoderTest` first, so the motors and encoders are right.
 2. Run `PIDSquare` with every gain at 0, to see what the controllers fix: the wheels turn slower than asked, each move rolls past its target, more the faster it goes, and the robot curves.
@@ -241,7 +241,7 @@ Copy the tuned lines into `setup()` of every sketch for that robot, after `begin
 
 The library takes care of the usual PID pitfalls. The integral only grows while the output isn't at its limit, so it can't wind up. The derivative comes from the measured movement, so it doesn't jump when a move starts. And when a wheel would go past the limit, both slow down by the same amount, so keeping straight comes first.
 
-[`examples/PIDSpeedControl/`](examples/PIDSpeedControl/PIDSpeedControl.ino) writes the speed controller out in the sketch, to show how a PID controller works inside.
+[`examples/Encoders/PIDSpeedControl/`](examples/Encoders/PIDSpeedControl/PIDSpeedControl.ino) writes the speed controller out in the sketch, to show how a PID controller works inside.
 
 ## Upgrading from 0.2.x
 
