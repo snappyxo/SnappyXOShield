@@ -32,9 +32,9 @@ const float dt = 0.1;        // the PID runs every 100 ms, 0.1 seconds
 
 // The robot's measurements
 const float WHEEL_DIAMETER_MM = 61;
-const float GEAR_RATIO = 120;          // the motor turns 120 times for each turn of the wheel
-const float PULSES_PER_MOTOR_TURN = 8;  // what the encoder gives
-const float PULSES_PER_WHEEL_TURN = PULSES_PER_MOTOR_TURN * GEAR_RATIO;  // 960
+const float GEAR_RATIO = 120;          // how many times the motor turns for each turn of the wheel
+const float PULSES_PER_MOTOR_TURN = 8;  // how many pulses the encoder gives for each turn of the motor: its PPR
+const float PULSES_PER_WHEEL_TURN = PULSES_PER_MOTOR_TURN * GEAR_RATIO;
 
 // How far to drive: 30 inches, in pulses of each wheel
 const float DISTANCE_MM = 30 * 25.4;

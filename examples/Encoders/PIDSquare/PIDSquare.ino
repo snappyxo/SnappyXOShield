@@ -52,9 +52,9 @@ const bool PLOT = false;  // true: the Serial Plotter instead of the table
 // The robot's measurements
 const float WHEEL_DIAMETER_MM = 61;
 const float WHEEL_SPACING_MM = 96;      // from the middle of one wheel to the middle of the other
-const float GEAR_RATIO = 120;           // the motor turns 120 times for each turn of the wheel
-const float PULSES_PER_MOTOR_TURN = 8;  // what the encoder gives
-const float PULSES_PER_WHEEL_TURN = PULSES_PER_MOTOR_TURN * GEAR_RATIO;  // 960
+const float GEAR_RATIO = 120;           // how many times the motor turns for each turn of the wheel
+const float PULSES_PER_MOTOR_TURN = 8;  // how many pulses the encoder gives for each turn of the motor: its PPR
+const float PULSES_PER_WHEEL_TURN = PULSES_PER_MOTOR_TURN * GEAR_RATIO;
 const float RATED_RPM = 160;            // the wheel's speed at full power, from the motor's datasheet
 
 const float SIDE_CM = 40;  // the square's sides
