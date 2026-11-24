@@ -28,7 +28,8 @@ struct MoveStatus {
 // There's no default, so every sketch says which shield it's written for.
 // Call begin() once in setup(). Speeds run from -255 (full backward) to 255
 // (full forward), and 0 stops. With encoder motors, also call beginEncoders()
-// to measure the wheels, drive a distance and turn by an angle.
+// and set the robot's measurements, to measure the wheels, drive a distance
+// and turn by an angle.
 class SnappyXOShield {
    public:
 	// Shield version, printed on the board
@@ -104,14 +105,16 @@ class SnappyXOShield {
 	long rightCount();
 	void resetCounts();
 
-	// Each wheel's speed in turns per minute, negative when rolling backward
+	// Each wheel's speed in turns per minute, negative when rolling backward.
+	// 0 until setGearRatio() and setEncoderPulses() are called.
 	float leftRPM();
 	float rightRPM();
 
 	// Drives straight for a distance, then brakes. A negative distance drives
 	// backward. rpm is the wheels' speed in turns per minute, 60 if left out.
 	// Waits until the robot has stopped. Returns false, after stopping the
-	// motors, if beginEncoders() wasn't called, a wheel stopped turning for a
+	// motors, if beginEncoders() wasn't called, a measurement the move needs
+	// isn't set (see below), a wheel stopped turning for a
 	// second without its power going up (an encoder unplugged, a wheel stuck,
 	// or too little power), a wheel turned the wrong way (an encoder's B
 	// unplugged, or its A and B swapped), or the position controller didn't
@@ -134,9 +137,12 @@ class SnappyXOShield {
 	bool spinTurn(float degrees, int rpm = 60);
 	bool pivotTurn(float degrees, int rpm = 60);
 
-	// The robot's measurements, for the calls above. The defaults fit the
-	// SnappyXO robot: 61 mm wheels, 96 mm apart, and a 120:1 gearbox rated at
-	// 160 RPM, with an 8-pulse encoder.
+	// The robot's measurements, for the calls above. Each robot sets its own:
+	// there are no defaults, and a move returns false until the ones it needs
+	// are set. Every move needs the wheel diameter, the gear ratio and the
+	// encoder's pulses, and the turns need the wheel spacing too. Without
+	// setSpeedPID(), the moves also need the rated RPM. A call with 0 or less
+	// is ignored.
 	void setWheelDiameter(float mm);
 	// From the middle of one wheel to the middle of the other. Only the turns
 	// use it: if they fall short, make it bigger; if they turn too far,
@@ -234,6 +240,9 @@ class SnappyXOShield {
 	uint8_t _leftEncoder();
 	uint8_t _rightEncoder();
 
+	// True when a move can run: the encoders are on and the measurements it
+	// needs are set. turning: a turn, which needs the wheel spacing too.
+	bool _canMove(bool turning);
 	// Turns the wheels for the moves above
 	bool _moveWheels(long pulses, int8_t leftDir, int8_t rightDir, int rpm);
 };

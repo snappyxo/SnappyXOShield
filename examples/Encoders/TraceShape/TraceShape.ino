@@ -25,16 +25,22 @@ void setup() {
   // shield.invertRight();  // the right motor (M2) turns backward when it should go forward
   // shield.swapMotors();   // the left wheel's motor is plugged into M2, the right wheel's into M1
 
+  // The robot's measurements: change them to fit yours. The first three are on
+  // the motor's datasheet; measure the wheels. The moves don't run without them.
+  shield.setGearRatio(120);     // how many times the motor turns for each turn of the wheel
+  shield.setEncoderPulses(8);   // how many pulses the encoder gives for each turn of the motor: its PPR
+  shield.setRatedRPM(160);      // the wheel's speed at full power
+  shield.setWheelDiameter(61);  // in millimeters
+  // From the middle of one wheel to the middle of the other, in millimeters.
+  // If the robot turns too little, make it bigger; too far, smaller.
+  shield.setWheelSpacing(96);
+
   // Without PID control, the wheels turn slower than asked, each move rolls
   // a little past its end, and nothing keeps the wheels together. Paste your
   // robot's tuned values here (the PIDSquare example shows how to find them):
   // shield.setSpeedPID(0);
   // shield.setHeadingPID(0);
   // shield.setPositionPID(0);
-
-  // The distance between the middles of the wheels, in millimeters. If the
-  // robot turns too little, make this bigger; too far, smaller.
-  // shield.setWheelSpacing(96);
 
   delay(2000);  // time to step back
 

@@ -104,7 +104,7 @@ Call these in `setup()`, after `begin()`:
 
 ## Encoder motors
 
-Encoder motors, like the DFRobot TT motor with encoder (6V, 160 RPM, 120:1), tell how far their wheels have turned: 8 pulses for each turn of the motor, so 960 for each turn of the wheel through the 120:1 gearbox. With them, the robot can drive a set distance and turn by an angle. Sketches without encoders don't need to change.
+Encoder motors tell how far their wheels have turned, in pulses. The DFRobot TT motor with encoder (6V, 160 RPM, 120:1), for example, gives 8 pulses for each turn of the motor, so 960 for each turn of the wheel through its 120:1 gearbox. With them, the robot can drive a set distance and turn by an angle. Any encoder motor works: the library has no motor or wheel sizes built in, so each sketch sets its robot's measurements, from the motor's datasheet and a ruler (see [Calls](#calls)). Sketches without encoders don't need to change.
 
 ### Wiring
 
@@ -126,23 +126,25 @@ If you call `swapMotors()` because the motors are plugged in the other way round
 | Call                                       | What it does                                                 |
 |--------------------------------------------|--------------------------------------------------------------|
 | `shield.beginEncoders()`                   | Starts counting the encoder pulses. Call once in `setup()`, after `begin()` |
-| `shield.leftCount()`, `rightCount()`       | How far each wheel has turned, in pulses (960 per wheel turn with a 120:1 gearbox). Counts up rolling forward, down rolling backward |
+| `shield.leftCount()`, `rightCount()`       | How far each wheel has turned, in pulses: the encoder's pulses per motor turn times the gear ratio for each wheel turn, such as 960 for the DFRobot TT motor. Counts up rolling forward, down rolling backward |
 | `shield.resetCounts()`                     | Sets both counts back to 0                                   |
 | `shield.leftRPM()`, `rightRPM()`           | Each wheel's speed in turns per minute, negative rolling backward |
 | `shield.driveInches(inches)`, `driveInches(inches, rpm)` | Drives straight that far, then stops. Negative inches drive backward. `rpm` is the wheels' speed in turns per minute, 60 if left out |
 | `shield.driveCm(cm)`, `driveCm(cm, rpm)`   | The same in centimeters                                      |
 | `shield.spinTurn(degrees)`, `spinTurn(degrees, rpm)` | Turns by that angle spinning in place, then stops: positive turns right, negative turns left |
 | `shield.pivotTurn(degrees)`, `pivotTurn(degrees, rpm)` | Turns by that angle pivoting on one wheel, then stops: positive turns right, negative turns left |
-| `shield.setWheelDiameter(mm)`              | The wheels' diameter in millimeters, 61 if not set           |
-| `shield.setWheelSpacing(mm)`               | From the middle of one wheel to the middle of the other, in millimeters, 96 if not set. Only the turns use it |
-| `shield.setGearRatio(ratio)`               | How many times the motor turns for one turn of the wheel, for example `48` for a 48:1 gearbox. 120 if not set |
-| `shield.setEncoderPulses(pulses)`          | How many pulses the encoder gives for each turn of the motor, on each of its outputs: the PPR on its datasheet. 8 if not set |
-| `shield.setRatedRPM(rpm)`                  | The wheels' speed at full power, from the motor's datasheet, 160 if not set. Without the speed controller, the moves guess the power for a speed from it |
+| `shield.setWheelDiameter(mm)`              | The wheels' diameter in millimeters. Every move needs it     |
+| `shield.setWheelSpacing(mm)`               | From the middle of one wheel to the middle of the other, in millimeters. Only the turns use it, and need it |
+| `shield.setGearRatio(ratio)`               | How many times the motor turns for one turn of the wheel, for example `48` for a 48:1 gearbox. Every move needs it, and so do `leftRPM()` and `rightRPM()` |
+| `shield.setEncoderPulses(pulses)`          | How many pulses the encoder gives for each turn of the motor, on each of its outputs: the PPR on its datasheet. Every move needs it, and so do `leftRPM()` and `rightRPM()` |
+| `shield.setRatedRPM(rpm)`                  | The wheels' speed at full power, from the motor's datasheet. Without the speed controller, the moves guess the power for a speed from it, so they need it |
 | `shield.setSpeedPID(kp, ki, kd)`           | Turns on the speed controllers for the moves: see [Tuning your robot with PID](#tuning-your-robot-with-pid) |
 | `shield.setHeadingPID(kp, ki, kd)`         | Turns on the heading controller                              |
 | `shield.setPositionPID(kp, ki, kd)`        | Turns on the position controller                             |
 | `shield.showMoves(Serial)`                 | Prints what the controllers see during moves, for the Serial Plotter |
 | `shield.showMoves(function)`               | Hands the same to a function of your sketch's, to show it anywhere else: see [Tuning your robot with PID](#tuning-your-robot-with-pid) |
+
+The measurements have no defaults, since every robot differs. Until the ones a move needs are set, it returns `false` without moving, and `leftRPM()` and `rightRPM()` read 0 until the gear ratio and the encoder's pulses are set. Set them in `setup()`, after `beginEncoders()`.
 
 All four moves take the wheels' speed as an optional last number, `rpm`, in turns per minute, 60 if left out: `shield.driveInches(24, 90)`. Its sign is ignored: the distance or angle gives the direction. It's the same unit `leftRPM()` and `rightRPM()` measure. Without the speed controller, the library guesses the motor power for that speed from `setRatedRPM()`, so the wheels may turn slower. With it, they're held at that speed.
 
@@ -152,6 +154,13 @@ All four moves take the wheels' speed as an optional last number, `rpm`, in turn
 void setup() {
   shield.begin();
   shield.beginEncoders();
+
+  // Your robot's measurements, for example the DFRobot TT motor with encoder
+  shield.setGearRatio(120);
+  shield.setEncoderPulses(8);
+  shield.setRatedRPM(160);
+  shield.setWheelDiameter(61);
+  shield.setWheelSpacing(96);
 
   shield.driveInches(24);  // 24 inches forward
   shield.spinTurn(90);     // spin right 90 degrees
@@ -177,7 +186,7 @@ There are two ways to turn:
 
 `spinTurn()` stays on the spot, which helps in tight places. `pivotTurn()` moves only one wheel, so it takes twice as long and swings the robot around the wheel that stays still.
 
-A move returns `false` when it couldn't finish: when `beginEncoders()` wasn't called, when a wheel stopped turning for a second without its power going up (an unplugged encoder, a stuck wheel or too little power), when a wheel turned the wrong way (its encoder's B unplugged, or its A and B swapped), or when the position controller hadn't settled on the target 3 seconds after getting there. The motors are stopped either way.
+A move returns `false` when it couldn't finish: when `beginEncoders()` wasn't called, when a measurement it needs isn't set, when a wheel stopped turning for a second without its power going up (an unplugged encoder, a stuck wheel or too little power), when a wheel turned the wrong way (its encoder's B unplugged, or its A and B swapped), or when the position controller hadn't settled on the target 3 seconds after getting there. The motors are stopped either way.
 
 ```cpp
 if (!shield.driveInches(24)) {

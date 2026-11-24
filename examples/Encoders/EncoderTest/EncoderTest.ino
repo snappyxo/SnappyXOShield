@@ -30,6 +30,10 @@ void setup() {
   shield.begin();          // sets up the motor pins
   shield.beginEncoders();  // starts counting the encoders' pulses
 
+  // The motor's numbers, from its datasheet, for the speed the test shows
+  shield.setGearRatio(120);    // how many times the motor turns for each turn of the wheel
+  shield.setEncoderPulses(8);  // how many pulses the encoder gives for each turn of the motor: its PPR
+
   waitForStart();
   Serial.println(F("Forward is the way that would roll the robot ahead."));
 

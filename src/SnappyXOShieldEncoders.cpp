@@ -17,9 +17,9 @@ uint8_t aPins[2], bPins[2];
 
 // How many pulses the encoder gives for each turn of the motor, set by
 // setEncoderPulses(). The gearbox then turns the wheel once every
-// setGearRatio() turns of the motor. 8 unless set. Kept here rather than with
+// setGearRatio() turns of the motor. 0 until set. Kept here rather than with
 // the other settings, since the interrupts read it.
-uint16_t pulsesPerMotorTurn = 8;
+uint16_t pulsesPerMotorTurn = 0;
 
 // With no pulse for this long, a wheel counts as stopped
 const unsigned long STOPPED_US = 200000UL;
@@ -206,10 +206,11 @@ float pidStep(const float gains[3], float &integral, float error,
 // code, so only sketches that use it link them (library.properties sets
 // dot_a_linkage).
 bool SnappyXOShield::_encodersOn = false;
-float SnappyXOShield::_wheelDiameter = 61;  // mm
-float SnappyXOShield::_wheelSpacing = 96;   // mm
-float SnappyXOShield::_gearRatio = 120;
-float SnappyXOShield::_ratedRPM = 160;  // the wheel's speed at full power
+// The robot's measurements: 0 until the sketch sets them
+float SnappyXOShield::_wheelDiameter = 0;  // mm
+float SnappyXOShield::_wheelSpacing = 0;   // mm
+float SnappyXOShield::_gearRatio = 0;
+float SnappyXOShield::_ratedRPM = 0;  // the wheel's speed at full power
 float SnappyXOShield::_speedGains[3];  // all 0: off
 float SnappyXOShield::_headingGains[3];
 float SnappyXOShield::_positionGains[3];
@@ -267,9 +268,15 @@ long SnappyXOShield::rightCount() {
 }
 
 float SnappyXOShield::leftRPM() {
+	if (pulsesPerMotorTurn == 0 || _gearRatio == 0) {
+		return 0;  // not set
+	}
 	return readSpeed(_leftEncoder()) * 60 / pulsesPerMotorTurn / _gearRatio;
 }
 float SnappyXOShield::rightRPM() {
+	if (pulsesPerMotorTurn == 0 || _gearRatio == 0) {
+		return 0;
+	}
 	return -readSpeed(_rightEncoder()) * 60 / pulsesPerMotorTurn /
 		   _gearRatio;
 }
@@ -286,12 +293,20 @@ bool SnappyXOShield::driveInches(float inches, int rpm) {
 }
 
 bool SnappyXOShield::driveCm(float cm, int rpm) {
+	if (!_canMove(false)) {
+		stop();
+		return false;
+	}
 	int8_t dir = cm < 0 ? -1 : 1;
 	long pulses = mmToPulses(fabs(cm) * 10, _wheelDiameter, _gearRatio);
 	return _moveWheels(pulses, dir, dir, rpm);
 }
 
 bool SnappyXOShield::spinTurn(float degrees, int rpm) {
+	if (!_canMove(true)) {
+		stop();
+		return false;
+	}
 	// Spinning in place, each wheel rolls around a circle as wide as the wheel
 	// spacing
 	float mm = fabs(degrees) / 360 * PI * _wheelSpacing;
@@ -302,6 +317,10 @@ bool SnappyXOShield::spinTurn(float degrees, int rpm) {
 }
 
 bool SnappyXOShield::pivotTurn(float degrees, int rpm) {
+	if (!_canMove(true)) {
+		stop();
+		return false;
+	}
 	// The moving wheel rolls around the still one, on a circle twice as wide
 	// as the wheel spacing
 	float mm = fabs(degrees) / 360 * 2 * PI * _wheelSpacing;
@@ -379,8 +398,16 @@ void SnappyXOShield::_printMove(const MoveStatus &move) {
 	_output->println(move.rightPower);
 }
 
+bool SnappyXOShield::_canMove(bool turning) {
+	// Without the speed controller, the moves guess the power from the rated
+	// RPM
+	return _encodersOn && _wheelDiameter > 0 && _gearRatio > 0 &&
+		   pulsesPerMotorTurn > 0 && (_wheelSpacing > 0 || !turning) &&
+		   (_ratedRPM > 0 || isOn(_speedGains));
+}
+
 // Turns the wheels by pulses, each its own way (1 forward, -1 backward, 0
-// stays still), then brakes.
+// stays still), then brakes. The moves call it once _canMove() is true.
 //
 // Every CONTROL_MS, up to three layers of control, all in wheel RPM:
 //   position: how fast to go, from the pulses still to go. Without it, rpm
@@ -394,10 +421,6 @@ void SnappyXOShield::_printMove(const MoveStatus &move) {
 //             low battery or a heavy load.
 bool SnappyXOShield::_moveWheels(long pulses, int8_t leftDir, int8_t rightDir,
 								 int rpm) {
-	if (!_encodersOn) {
-		stop();
-		return false;
-	}
 	bool positionOn = isOn(_positionGains);
 	bool headingOn = isOn(_headingGains) && leftDir != 0 && rightDir != 0;
 	bool speedOn = isOn(_speedGains);
