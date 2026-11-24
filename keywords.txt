@@ -3,6 +3,7 @@
 
 # Classes (KEYWORD1)
 SnappyXOShield	KEYWORD1
+MoveStatus	KEYWORD1
 
 # Methods (KEYWORD2)
 begin	KEYWORD2
@@ -34,7 +35,7 @@ setRatedRPM	KEYWORD2
 setSpeedPID	KEYWORD2
 setHeadingPID	KEYWORD2
 setPositionPID	KEYWORD2
-plotMoves	KEYWORD2
+showMoves	KEYWORD2
 
 # Constants (LITERAL1)
 V2	LITERAL1

@@ -49,8 +49,8 @@ const unsigned long GIVE_UP_MS = 1000;
 // A and B swapped.
 const long WRONG_WAY_PULSES = 100;
 
-// plotMoves() prints a line every this many control steps: 10 a second
-const uint8_t PLOT_EVERY = 5;
+// showMoves() shows a move every this many control steps: 10 a second
+const uint8_t SHOW_EVERY = 5;
 
 // Changed by the interrupts, so volatile
 volatile long counts[2];
@@ -211,7 +211,9 @@ float SnappyXOShield::_ratedRPM = 160;  // the wheel's speed at full power
 float SnappyXOShield::_speedGains[3];  // all 0: off
 float SnappyXOShield::_headingGains[3];
 float SnappyXOShield::_positionGains[3];
-Print *SnappyXOShield::_plot = nullptr;  // where plotMoves() prints, if anywhere
+// Where showMoves() shows the moves, if anywhere
+void (*SnappyXOShield::_showMove)(const MoveStatus &move) = nullptr;
+Print *SnappyXOShield::_output = nullptr;
 
 void SnappyXOShield::beginEncoders() {
 	// This shield version's encoder pins. Their A pins must be able to
@@ -339,8 +341,32 @@ void SnappyXOShield::setHeadingPID(float kp, float ki, float kd) {
 void SnappyXOShield::setPositionPID(float kp, float ki, float kd) {
 	setGains(_positionGains, kp, ki, kd);
 }
-void SnappyXOShield::plotMoves(Print &output) {
-	_plot = &output;
+void SnappyXOShield::showMoves(Print &output) {
+	_output = &output;
+	_showMove = _printMove;
+}
+void SnappyXOShield::showMoves(void (*show)(const MoveStatus &move)) {
+	_showMove = show;
+}
+
+void SnappyXOShield::_printMove(const MoveStatus &move) {
+	_output->print(F("remaining:"));
+	_output->print(move.remaining);
+	_output->print(F(",ahead:"));
+	_output->print(move.ahead);
+	// Whole numbers, which is precise enough to plot. Speeds in RPM.
+	_output->print(F(",leftTarget:"));
+	_output->print(lround(move.leftTarget));
+	_output->print(F(",leftSpeed:"));
+	_output->print(lround(move.leftSpeed));
+	_output->print(F(",rightTarget:"));
+	_output->print(lround(move.rightTarget));
+	_output->print(F(",rightSpeed:"));
+	_output->print(lround(move.rightSpeed));
+	_output->print(F(",leftPower:"));
+	_output->print(move.leftPower);
+	_output->print(F(",rightPower:"));
+	_output->println(move.rightPower);
 }
 
 // Turns the wheels by pulses, each its own way (1 forward, -1 backward, 0
@@ -391,7 +417,7 @@ bool SnappyXOShield::_moveWheels(long pulses, int8_t leftDir, int8_t rightDir,
 	unsigned long arrivedMs = 0;          // when that first happened
 	bool settling = false;                // within SETTLE_PULSES now
 	unsigned long settlingMs = 0;         // since when
-	uint8_t plotStep = 0;
+	uint8_t showStep = 0;
 	unsigned long lastControlMs = millis() - CONTROL_MS;
 
 	while (true) {
@@ -539,25 +565,18 @@ bool SnappyXOShield::_moveWheels(long pulses, int8_t leftDir, int8_t rightDir,
 			}
 		}
 
-		if (_plot != nullptr && ++plotStep >= PLOT_EVERY) {
-			plotStep = 0;
-			_plot->print(F("remaining:"));
-			_plot->print(remaining);
-			_plot->print(F(",ahead:"));
-			_plot->print(left - right);
-			// Whole numbers, which is precise enough to plot. Speeds in RPM.
-			_plot->print(F(",leftTarget:"));
-			_plot->print(lround(leftCommand));
-			_plot->print(F(",leftSpeed:"));
-			_plot->print(lround(leftSpeed * toRPM));
-			_plot->print(F(",rightTarget:"));
-			_plot->print(lround(rightCommand));
-			_plot->print(F(",rightSpeed:"));
-			_plot->print(lround(rightSpeed * toRPM));
-			_plot->print(F(",leftPower:"));
-			_plot->print(lround(leftPower));
-			_plot->print(F(",rightPower:"));
-			_plot->println(lround(rightPower));
+		if (_showMove != nullptr && ++showStep >= SHOW_EVERY) {
+			showStep = 0;
+			MoveStatus move;
+			move.remaining = remaining;
+			move.ahead = left - right;
+			move.leftTarget = leftCommand;
+			move.leftSpeed = leftSpeed * toRPM;
+			move.rightTarget = rightCommand;
+			move.rightSpeed = rightSpeed * toRPM;
+			move.leftPower = lround(leftPower);
+			move.rightPower = lround(rightPower);
+			_showMove(move);
 		}
 	}
 

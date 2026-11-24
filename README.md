@@ -140,7 +140,8 @@ If you call `swapMotors()` because the motors are plugged in the other way round
 | `shield.setSpeedPID(kp, ki, kd)`           | Turns on the speed controllers for the moves: see [Tuning your robot with PID](#tuning-your-robot-with-pid) |
 | `shield.setHeadingPID(kp, ki, kd)`         | Turns on the heading controller                              |
 | `shield.setPositionPID(kp, ki, kd)`        | Turns on the position controller                             |
-| `shield.plotMoves(Serial)`                 | Prints what the controllers see during moves, for the Serial Plotter |
+| `shield.showMoves(Serial)`                 | Prints what the controllers see during moves, for the Serial Plotter |
+| `shield.showMoves(function)`               | Hands the same to a function of your sketch's, to show it anywhere else: see [Tuning your robot with PID](#tuning-your-robot-with-pid) |
 
 All four moves take the wheels' speed as an optional last number, `rpm`, in turns per minute, 60 if left out: `shield.driveInches(24, 90)`. Its sign is ignored: the distance or angle gives the direction. It's the same unit `leftRPM()` and `rightRPM()` measure. Without the speed controller, the library guesses the motor power for that speed from `setRatedRPM()`, so the wheels may turn slower. With it, they're held at that speed.
 
@@ -237,7 +238,25 @@ Copy the tuned lines into `setup()` of every sketch for that robot, after `begin
 | A wheel never reaches its target speed | Raise `speedKi`, or ask for less: the robot may be at its top speed |
 | The speed swings above and below the target | Lower `speedKp` or `speedKi`, or add `speedKd` |
 
-`shield.plotMoves(Serial)` prints what the controllers see, ten times a second during each move, for the Serial Plotter: the pulses still to go, how far the left wheel is ahead, and each wheel's target speed, measured speed (both in RPM) and power. Use `Serial.begin(115200)`, and keep the USB cable plugged in.
+`shield.showMoves(Serial)` prints what the controllers see, ten times a second during each move, for the Serial Plotter: the pulses still to go, how far the left wheel is ahead, and each wheel's target speed, measured speed (both in RPM) and power. Use `Serial.begin(115200)`, and keep the USB cable plugged in.
+
+To show them anywhere else, such as on a display, an SD card or a phone, give `showMoves()` a function of your sketch's instead. It gets the same numbers, ten times a second during each move:
+
+```cpp
+void sendMove(const MoveStatus &move) {
+  // move.remaining: pulses still to go
+  // move.ahead: pulses the left wheel is ahead of the right
+  // move.leftTarget, move.leftSpeed, move.rightTarget, move.rightSpeed: in RPM
+  // move.leftPower, move.rightPower: -255 to 255
+}
+
+void setup() {
+  // ...
+  shield.showMoves(sendMove);
+}
+```
+
+Each wheel counts the way it turns in the move, so in a spin turn both wheels' speeds are positive. The function runs in the middle of the move, so keep it quick, a few milliseconds at most, or the controllers fall behind. Each `showMoves()` call replaces the last one, and `showMoves(nullptr)` stops showing moves.
 
 The library takes care of the usual PID pitfalls. The integral only grows while the output isn't at its limit, so it can't wind up. The derivative comes from the measured movement, so it doesn't jump when a move starts. And when a wheel would go past the limit, both slow down by the same amount, so keeping straight comes first.
 

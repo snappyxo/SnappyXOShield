@@ -6,6 +6,20 @@
 
 #include <Arduino.h>
 
+// What the controllers see during a move, for showMoves(). Each wheel counts
+// the way it turns in this move, so spinning, the wheel rolling backward has a
+// positive speed too.
+struct MoveStatus {
+	long remaining;     // pulses still to go, negative once past the target
+	long ahead;         // pulses the left wheel is ahead of the right
+	float leftTarget;   // the speed asked of the left wheel, in RPM
+	float leftSpeed;    // how fast it turns, in RPM
+	float rightTarget;  // the same for the right wheel
+	float rightSpeed;
+	int leftPower;      // the power each motor gets, -255 to 255: negative
+	int rightPower;     // pushes its wheel back
+};
+
 // Drives the two DC motors on the SnappyXO Motor Shield.
 //
 //   SnappyXOShield shield(SnappyXOShield::V3);  // v3 shield
@@ -159,9 +173,21 @@ class SnappyXOShield {
 	// a wheel speed in RPM.
 	void setPositionPID(float kp, float ki = 0, float kd = 0);
 
-	// Prints what the controllers see during moves, ten times a second, for
-	// the Serial Plotter: shield.plotMoves(Serial);
-	void plotMoves(Print &output);
+	// Shows what the controllers see during moves, ten times a second. On the
+	// Serial Plotter:
+	//
+	//   shield.showMoves(Serial);
+	//
+	// Or anywhere else, with a function of the sketch's that takes a
+	// MoveStatus. It runs in the middle of the move, so keep it quick, a few
+	// milliseconds at most, or the controllers fall behind:
+	//
+	//   void sendMove(const MoveStatus &move) { ... }
+	//   shield.showMoves(sendMove);
+	//
+	// Each call replaces the last one. showMoves(nullptr) stops showing moves.
+	void showMoves(Print &output);
+	void showMoves(void (*show)(const MoveStatus &move));
 
    private:
 	// The pins of one motor output: the motor's, then its encoder's
@@ -190,7 +216,12 @@ class SnappyXOShield {
 	static bool _encodersOn;
 	static float _wheelDiameter, _wheelSpacing, _gearRatio, _ratedRPM;
 	static float _speedGains[3], _headingGains[3], _positionGains[3];  // kp, ki, kd
-	static Print *_plot;
+	// Where showMoves() shows the moves, and where showMoves(Print &) prints them
+	static void (*_showMove)(const MoveStatus &move);
+	static Print *_output;
+
+	// showMoves(Print &)'s function: a line for the Serial Plotter
+	static void _printMove(const MoveStatus &move);
 
 	void _writeMotor(uint8_t forwardPin, uint8_t backwardPin, uint8_t enablePin,
 					 int speed);

@@ -78,7 +78,7 @@ void setup() {
   shield.setHeadingPID(headingKp, headingKi, headingKd);
   shield.setPositionPID(positionKp, positionKi, positionKd);
   if (PLOT) {
-    shield.plotMoves(Serial);
+    shield.showMoves(Serial);
   }
 
   delay(2000);  // time to put the robot down
