@@ -3,6 +3,7 @@
 
 # Classes (KEYWORD1)
 SnappyXOShield	KEYWORD1
+MoveStatus	KEYWORD1
 
 # Methods (KEYWORD2)
 begin	KEYWORD2
@@ -17,6 +18,25 @@ setMotors	KEYWORD2
 drive	KEYWORD2
 stop	KEYWORD2
 brake	KEYWORD2
+beginEncoders	KEYWORD2
+leftCount	KEYWORD2
+rightCount	KEYWORD2
+resetCounts	KEYWORD2
+leftRPM	KEYWORD2
+rightRPM	KEYWORD2
+driveInches	KEYWORD2
+driveCm	KEYWORD2
+spinTurn	KEYWORD2
+pivotTurn	KEYWORD2
+setWheelDiameter	KEYWORD2
+setWheelSpacing	KEYWORD2
+setGearRatio	KEYWORD2
+setEncoderPulses	KEYWORD2
+setRatedRPM	KEYWORD2
+setSpeedPID	KEYWORD2
+setHeadingPID	KEYWORD2
+setPositionPID	KEYWORD2
+showMoves	KEYWORD2
 
 # Constants (LITERAL1)
 V2	LITERAL1

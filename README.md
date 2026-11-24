@@ -1,6 +1,6 @@
 # SnappyXOShield
 
-An Arduino library for driving the two motors on the SnappyXO Motor Shield. It knows which pins the shield's motor driver uses, so a sketch only says where to go.
+An Arduino library for driving the two motors on the SnappyXO Motor Shield. It knows which pins the shield's motor driver uses, so a sketch only says where to go. With [encoder motors](#encoder-motors), it also measures how far each wheel turns, drives a set distance and turns by an angle, with optional PID control tuned for each robot.
 
 ## Installation
 
@@ -29,7 +29,7 @@ void loop() {
 }
 ```
 
-See [`examples/BasicMotorControl/`](examples/BasicMotorControl/BasicMotorControl.ino) for the full sketch, and [`examples/MicroBlueDrive/`](examples/MicroBlueDrive/MicroBlueDrive.ino) to drive from the MicroBlue app on an UNO R4 WiFi.
+See [`examples/BasicMotorControl/`](examples/BasicMotorControl/BasicMotorControl.ino) for the full sketch, and [`examples/MicroBlueDrive/`](examples/MicroBlueDrive/MicroBlueDrive.ino) to drive from the MicroBlue app on an UNO R4 WiFi. For encoder motors, see [`EncoderTest`](examples/Encoders/EncoderTest/EncoderTest.ino), [`TraceShape`](examples/Encoders/TraceShape/TraceShape.ino), [`PIDSquare`](examples/Encoders/PIDSquare/PIDSquare.ino), [`MicroBluePIDSquare`](examples/Encoders/MicroBluePIDSquare/MicroBluePIDSquare.ino) and [`PIDSpeedControl`](examples/Encoders/PIDSpeedControl/PIDSpeedControl.ino).
 
 ## Shields
 
@@ -37,13 +37,16 @@ See [`examples/BasicMotorControl/`](examples/BasicMotorControl/BasicMotorControl
 |-----------------------------|-----------------------------|-------------------------------|
 | Board                       | UNO R4 WiFi, or UNO R3      | UNO R3 with an HM-10 module   |
 | In the sketch               | `SnappyXOShield shield(SnappyXOShield::V3);` | `SnappyXOShield shield(SnappyXOShield::V2);` |
-| Left motor IN1 / IN2 / PWM  | 4 / 7 / 5                   | 4 / 5 / 6                     |
-| Right motor IN1 / IN2 / PWM | 8 / 9 / 6                   | 12 / 13 / 11                  |
+| Left motor (M1) IN1 / IN2 / EN  | 4 / 7 / 5               | 4 / 5 / 6                     |
+| Right motor (M2) IN1 / IN2 / EN | 8 / 9 / 6               | 12 / 13 / 11                  |
 | Servo headers               | A0, A1, A2, A3              | 9, 10, A0, A1                 |
+| [Encoder motors](#encoder-motors) (optional) | Left 2, A2 · right 3, A3 | Left 2, A2 · right 3, A3 |
 
-The library sets up the motor pins only, and a sketch shouldn't use them for anything else. The servo headers are listed for reference: use the pin number printed on the board, for example `myServo.attach(A0);`.
+The shield labels its motor outputs M1 and M2. The library calls them left and right: M1 is the left motor, M2 the right one.
 
-On the UNO R3, the IRremote library takes over the timer that makes the PWM on pin 11, the v2 shield's right motor speed pin, so an IR receiver and the v2 shield's motors don't work together. The v3 shield's speed pins (5 and 6) aren't affected.
+The library sets up the motor pins, and the encoder pins once `beginEncoders()` is called. A sketch shouldn't use those pins for anything else. The servo headers are listed for reference: use the pin number printed on the board, for example `myServo.attach(A0);`. On the v3 shield, encoder motors take the A2 and A3 headers, which leaves A0 and A1 for servos.
+
+On the UNO R3, the IRremote library takes over the timer that makes the PWM on pin 11, the v2 shield's right motor (M2) EN (speed) pin, so an IR receiver and the v2 shield's motors don't work together. The v3 shield's EN pins (5 and 6) aren't affected.
 
 ## API
 
@@ -95,9 +98,196 @@ Call these in `setup()`, after `begin()`:
 
 | Call                   | Use it when                                                  |
 |------------------------|--------------------------------------------------------------|
-| `shield.invertLeft()`  | The motor on the shield's left output turns the wrong way    |
-| `shield.invertRight()` | The motor on the shield's right output turns the wrong way   |
-| `shield.swapMotors()`  | The left and right motors are plugged in the other way round |
+| `shield.invertLeft()`  | The motor on M1, the shield's left output, turns the wrong way |
+| `shield.invertRight()` | The motor on M2, the shield's right output, turns the wrong way |
+| `shield.swapMotors()`  | The motors are plugged in the other way round: the left wheel's into M2, the right wheel's into M1 |
+
+## Encoder motors
+
+Encoder motors tell how far their wheels have turned, in pulses. The DFRobot TT motor with encoder (6V, 160 RPM, 120:1), for example, gives 8 pulses for each turn of the motor, so 960 for each turn of the wheel through its 120:1 gearbox. With them, the robot can drive a set distance and turn by an angle. Any encoder motor works: the library has no motor or wheel sizes built in, so each sketch sets its robot's measurements, from the motor's datasheet and a ruler (see [Calls](#calls)). Sketches without encoders don't need to change.
+
+### Wiring
+
+Wire each encoder by the labels on its port. The pins are the same on the v3 and v2 shield:
+
+| Encoder     | Left wheel (M1) | Right wheel (M2) |
+|-------------|-----------------|------------------|
+| A           | 2          | 3           |
+| B           | A2         | A3          |
+| 5V (or VCC) | 5V         | 5V          |
+| GND         | GND        | GND         |
+
+A2 and A3 are the board's pins of that name, not the encoder's A. The A outputs must go to pins 2 and 3: they're the pins that can interrupt the sketch on every pulse, so none is missed. Upload [`examples/Encoders/EncoderTest/`](examples/Encoders/EncoderTest/EncoderTest.ino) to set up the robot. It turns each wheel and asks in the Serial Monitor which wheel turned and which way, then turns it backward to check its B wire. From your answers and the encoder counts, it works out what's wired wrong and says exactly what to change. At the end it prints the lines your sketches need in `setup()`, such as `shield.invertLeft();`, if any.
+
+If you call `swapMotors()` because the motors are plugged in the other way round, it swaps the encoders too.
+
+### Calls
+
+| Call                                       | What it does                                                 |
+|--------------------------------------------|--------------------------------------------------------------|
+| `shield.beginEncoders()`                   | Starts counting the encoder pulses. Call once in `setup()`, after `begin()` |
+| `shield.leftCount()`, `rightCount()`       | How far each wheel has turned, in pulses: the encoder's pulses per motor turn times the gear ratio for each wheel turn, such as 960 for the DFRobot TT motor. Counts up rolling forward, down rolling backward |
+| `shield.resetCounts()`                     | Sets both counts back to 0                                   |
+| `shield.leftRPM()`, `rightRPM()`           | Each wheel's speed in turns per minute, negative rolling backward |
+| `shield.driveInches(inches)`, `driveInches(inches, rpm)` | Drives straight that far, then stops. Negative inches drive backward. `rpm` is the wheels' speed in turns per minute, 60 if left out |
+| `shield.driveCm(cm)`, `driveCm(cm, rpm)`   | The same in centimeters                                      |
+| `shield.spinTurn(degrees)`, `spinTurn(degrees, rpm)` | Turns by that angle spinning in place, then stops: positive turns right, negative turns left |
+| `shield.pivotTurn(degrees)`, `pivotTurn(degrees, rpm)` | Turns by that angle pivoting on one wheel, then stops: positive turns right, negative turns left |
+| `shield.setWheelDiameter(mm)`              | The wheels' diameter in millimeters. Every move needs it     |
+| `shield.setWheelSpacing(mm)`               | From the middle of one wheel to the middle of the other, in millimeters. Only the turns use it, and need it |
+| `shield.setGearRatio(ratio)`               | How many times the motor turns for one turn of the wheel, for example `48` for a 48:1 gearbox. Every move needs it, and so do `leftRPM()` and `rightRPM()` |
+| `shield.setEncoderPulses(pulses)`          | How many pulses the encoder gives for each turn of the motor, on each of its outputs: the PPR on its datasheet. Every move needs it, and so do `leftRPM()` and `rightRPM()` |
+| `shield.setRatedRPM(rpm)`                  | The wheels' speed at full power, from the motor's datasheet. Without the speed controller, the moves guess the power for a speed from it, so they need it |
+| `shield.setSpeedPID(kp, ki, kd)`           | Turns on the speed controllers for the moves: see [Tuning your robot with PID](#tuning-your-robot-with-pid) |
+| `shield.setHeadingPID(kp, ki, kd)`         | Turns on the heading controller                              |
+| `shield.setPositionPID(kp, ki, kd)`        | Turns on the position controller                             |
+| `shield.showMoves(Serial)`                 | Prints what the controllers see during moves, for the Serial Plotter |
+| `shield.showMoves(function)`               | Hands the same to a function of your sketch's, to show it anywhere else: see [Tuning your robot with PID](#tuning-your-robot-with-pid) |
+
+The measurements have no defaults, since every robot differs. Until the ones a move needs are set, it returns `false` without moving, and `leftRPM()` and `rightRPM()` read 0 until the gear ratio and the encoder's pulses are set. Set them in `setup()`, after `beginEncoders()`.
+
+All four moves take the wheels' speed as an optional last number, `rpm`, in turns per minute, 60 if left out: `shield.driveInches(24, 90)`. Its sign is ignored: the distance or angle gives the direction. It's the same unit `leftRPM()` and `rightRPM()` measure. Without the speed controller, the library guesses the motor power for that speed from `setRatedRPM()`, so the wheels may turn slower. With it, they're held at that speed.
+
+### Driving a distance and turning
+
+```cpp
+void setup() {
+  shield.begin();
+  shield.beginEncoders();
+
+  // Your robot's measurements, for example the DFRobot TT motor with encoder
+  shield.setGearRatio(120);
+  shield.setEncoderPulses(8);
+  shield.setRatedRPM(160);
+  shield.setWheelDiameter(61);
+  shield.setWheelSpacing(96);
+
+  shield.driveInches(24);  // 24 inches forward
+  shield.spinTurn(90);     // spin right 90 degrees
+  shield.driveCm(-30, 90); // 30 cm backward, faster: 90 RPM
+  shield.pivotTurn(-45);   // pivot left 45 degrees
+}
+```
+
+Each move finishes before the next line runs. On its own, a move guesses the power for the speed you give it, so the wheels may turn slower, and brakes when it reaches the distance. So it rolls a little past, more the faster it goes, and nothing keeps the wheels together, so the robot may curve. [PID control](#tuning-your-robot-with-pid), tuned for your robot, fixes both.
+
+There are two ways to turn:
+
+```
+        spinTurn(90)                        pivotTurn(90)
+
+  forward ↑         ↓ backward       forward ↑
+         [L]   ●   [R]                      [L]       [●] stays still
+
+   turns around the middle            turns around the right wheel
+
+                    ● the point the robot turns around
+```
+
+`spinTurn()` stays on the spot, which helps in tight places. `pivotTurn()` moves only one wheel, so it takes twice as long and swings the robot around the wheel that stays still.
+
+A move returns `false` when it couldn't finish: when `beginEncoders()` wasn't called, when a measurement it needs isn't set, when a wheel stopped turning for a second without its power going up (an unplugged encoder, a stuck wheel or too little power), when a wheel turned the wrong way (its encoder's B unplugged, or its A and B swapped), or when the position controller hadn't settled on the target 3 seconds after getting there. The motors are stopped either way.
+
+```cpp
+if (!shield.driveInches(24)) {
+  // didn't get there
+}
+```
+
+Once the moves land on their target counts, what's left is the robot's measurements. Tires slip a little, more on some floors than others, so tune them in `setup()`:
+
+- Turns too little: make the wheel spacing bigger, for example `shield.setWheelSpacing(100);`. Turns too far: smaller. Spin and pivot turns slip differently, so if one is right and the other isn't, call `setWheelSpacing()` with each one's value before it.
+- Drives too short: make the wheel diameter smaller. Drives too far: bigger.
+- Drives and turns both fall short, or both go too far, by the same share, such as two-thirds of the way: the gear ratio or the encoder's pulses per motor turn is wrong. Check both on the motor's datasheet, and set them with `setGearRatio()` and `setEncoderPulses()`.
+
+[`examples/Encoders/TraceShape/`](examples/Encoders/TraceShape/TraceShape.ino) drives a U shape.
+
+### Tuning your robot with PID
+
+Robots differ in weight, battery, motors and floor, so the library doesn't come tuned: each robot gets its own PID gains, set in `setup()`. There are three controllers, all off until a sketch sets them, listed in the order to tune them:
+
+| Controller | Call | The error it measures | What it fixes |
+|------------|------|-----------------------|---------------|
+| Speed      | `setSpeedPID(kp, ki, kd)` | Target speed minus measured speed, for each wheel, in RPM | Holds the speed asked for instead of guessing the power, whatever the battery or the robot's weight |
+| Heading    | `setHeadingPID(kp, ki, kd)` | How many pulses one wheel is ahead of the other | Keeps the wheels together, so the robot drives straight and spins on the spot |
+| Position   | `setPositionPID(kp, ki, kd)` | Pulses still to go | Slows down near the end and settles on the target, backing up if it rolls past |
+
+Leave out `ki` and `kd` for P only, for example `shield.setHeadingPID(0.3);`. Setting all three to 0 turns a controller off again, and a call with a negative gain is ignored.
+
+The position and heading controllers ask for each wheel's speed, in RPM. Without the speed controller, the library guesses the power for that speed. With it, a speed controller on each wheel measures the speed and finds the power that holds it.
+
+```
+pulses still to go  ──► Position ──┐
+                                   ├──► each wheel's target RPM ──► Speed ──► motor power
+left wheel ahead by ──► Heading  ──┘
+```
+
+The heading controller works with or without the speed controller, but the position controller needs it. Near the end of a move, the position controller asks for speeds so slow that a guessed power can't turn the motors at all, so the robot stops short. The speed controller notices the wheels aren't turning and pushes harder until they do. Turning it on changes how the robot responds, so retune heading after turning it on: it usually needs a smaller gain.
+
+The order matters because the speed controller sits next to the motors and the other two work through it. The controllers work out their values from the outside in, position and heading first, then speed, and you tune them from the inside out. Heading and position only ask for wheel speeds, so how they behave depends on how well the speed controller delivers them. Tune it first, and retune heading and position whenever you change it. As a rule, an outer controller should react more slowly than the one it works through: if heading or position pushes harder than the speed controller can follow, they fight and the robot wobbles. That's why both need smaller gains once the speed controller is on. The order of the `set…PID()` lines in `setup()` doesn't matter, since each one only stores its gains, but this README and the examples list them in tuning order.
+
+Tune one controller at a time, in this order, with [`examples/Encoders/PIDSquare/`](examples/Encoders/PIDSquare/PIDSquare.ino):
+
+1. Run `EncoderTest` first, so the motors and encoders are right.
+2. Run `PIDSquare` with every gain at 0, to see what the controllers fix: the wheels turn slower than asked, each move rolls past its target, more the faster it goes, and the robot curves.
+3. **Speed**: start with `speedKp` alone, add `speedKi` until each wheel reaches its target speed, then a little `speedKd` if the speed swings around it. Watch it on the Serial Plotter. It's optional for heading alone, but position needs it.
+4. **Heading**: raise `headingKp` until the robot drives straight. Add `headingKd` if it wobbles, `headingKi` if a small difference stays.
+5. **Position**: raise `positionKp` until each move slows down and stops on its target. Add `positionKd` if it rolls past and comes back. If it stops short, raise `speedKi`.
+6. Then tune the measurements above, so the counts turn into the right distance and angle.
+
+Copy the tuned lines into `setup()` of every sketch for that robot, after `beginEncoders()`.
+
+#### Tuning from your phone
+
+On an UNO R4 WiFi, [`examples/Encoders/MicroBluePIDSquare/`](examples/Encoders/MicroBluePIDSquare/MicroBluePIDSquare.ino) drives the same square from the MicroBlue app, over the board's built-in Bluetooth. You type each controller's gains, the speed and the wheel spacing on your phone and press Run, with no upload in between. A chart shows the speed asked for and each wheel's speed during every move, and the Panel shows how far the last move went past its target and how far the left wheel ended up ahead. Next to each box you type in, a Value shows what the robot is really using, after a reset too. It needs the MicroBlue library 2.1 or later.
+
+Add its layout in the app with Layouts → + → Scan QR Code:
+
+<img src="extras/MicroBluePIDSquare-layout.png" alt="QR code of the MicroBluePIDSquare layout for the MicroBlue app" width="256">
+
+Or copy this link into Layouts → + → Add from Link:
+
+```
+microblue://layout#lVM7b4MwEP4rlmeGRN2YO7RSI6Fm6FB1MOEKloxx_YBGEf-9PvOoKSVKFsR95--h8_lCW5ruEypZDTSl2fMjOX45poEmtNC89eD7hdqzwq5iEoRv8MIXxY72ydw6NdI0AllDc0_7j2QkRAq5s7aR0ynt8FewHA_RVyeJrYCYwT8Wr5i2E6mrAISJeG8IEKMAipRYpkuwCRHw6b-alxUSneQWHbKDLzoui6aj6cMusmiZcHN6xQyyJoPMlyHZIP6rp5wwYOKkCxlWASsinRefiQSQ5OebVbSq4yFlB8IlcQb7o0BMtfA9T2rJPIIlOIAtnzDA-DzWBBfiVr-VgncMGKps-uI8uCwj3tOA3OW9VkH3Eb3qrxrDLQ9LOV_4CN2V4B8djDDBVzMYxU7L9NNSB3yVoa637-CvEoYIb2ZS8y-z_wE
+```
+
+The sketch's comments list the layout's items, to build it by hand instead.
+
+| What you see | Try |
+|--------------|-----|
+| Rolls past the target and stays there | Turn on the position controller, with the speed controller: raise `positionKp` |
+| Rolls past, backs up, rolls past again | Lower `positionKp`, or add `positionKd` |
+| Stops short, and the move gives up | Turn on the speed controller, or if it's on, raise `speedKi` |
+| The wheels turn slower than asked | Turn on the speed controller, or set `setRatedRPM()` to your robot's real top speed |
+| Curves | Raise `headingKp` |
+| Curves only when fast, with the speed controller | Ask for a lower `rpm`: above the robot's top speed, a wheel already at full power can't speed up to correct |
+| Wobbles from side to side | Lower `headingKp`, or add `headingKd` |
+| A wheel never reaches its target speed | Raise `speedKi`, or ask for less: the robot may be at its top speed |
+| The speed swings above and below the target | Lower `speedKp` or `speedKi`, or add `speedKd` |
+
+`shield.showMoves(Serial)` prints what the controllers see, ten times a second during each move, for the Serial Plotter: the pulses still to go, how far the left wheel is ahead, and each wheel's target speed, measured speed (both in RPM) and power. Use `Serial.begin(115200)`, and keep the USB cable plugged in.
+
+To show them anywhere else, such as on a display, an SD card or a phone, give `showMoves()` a function of your sketch's instead. It gets the same numbers, ten times a second during each move:
+
+```cpp
+void sendMove(const MoveStatus &move) {
+  // move.remaining: pulses still to go
+  // move.ahead: pulses the left wheel is ahead of the right
+  // move.leftTarget, move.leftSpeed, move.rightTarget, move.rightSpeed: in RPM
+  // move.leftPower, move.rightPower: -255 to 255
+}
+
+void setup() {
+  // ...
+  shield.showMoves(sendMove);
+}
+```
+
+Each wheel counts the way it turns in the move, so in a spin turn both wheels' speeds are positive. The function runs in the middle of the move, so keep it quick, a few milliseconds at most, or the controllers fall behind. Each `showMoves()` call replaces the last one, and `showMoves(nullptr)` stops showing moves.
+
+The library takes care of the usual PID pitfalls. The integral only grows while the output isn't at its limit, so it can't wind up. The derivative comes from the measured movement, so it doesn't jump when a move starts. And when a wheel would go past the limit, both slow down by the same amount, so keeping straight comes first.
+
+[`examples/Encoders/PIDSpeedControl/`](examples/Encoders/PIDSpeedControl/PIDSpeedControl.ino) writes the speed controller out in the sketch, to show how a PID controller works inside.
 
 ## Upgrading from 0.2.x
 
@@ -119,7 +309,7 @@ Version 0.3.0 puts everything in the `SnappyXOShield` class, so sketches written
 ## Compatibility
 
 - **SnappyXO Motor Shield:** v3 and v2
-- **Boards:** any Arduino, since the library only uses `pinMode()`, `digitalWrite()` and `analogWrite()`. The examples are compiled for the UNO R3 and UNO R4 WiFi on every change.
+- **Boards:** boards shaped like an UNO, which the shield plugs onto. The library needs pins A2 and A3, and interrupts on pins 2 and 3 for encoder motors. The examples are compiled for the UNO R3 and UNO R4 WiFi on every change.
 
 ## License
 
