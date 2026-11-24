@@ -15,9 +15,11 @@ namespace {
 // beginEncoders().
 uint8_t aPins[2], bPins[2];
 
-// The encoder pulses 8 times per turn of the motor. The gearbox then turns the
-// wheel once every setGearRatio() turns of the motor.
-const uint8_t PULSES_PER_MOTOR_TURN = 8;
+// How many pulses the encoder gives for each turn of the motor, set by
+// setEncoderPulses(). The gearbox then turns the wheel once every
+// setGearRatio() turns of the motor. 8 unless set. Kept here rather than with
+// the other settings, since the interrupts read it.
+uint16_t pulsesPerMotorTurn = 8;
 
 // With no pulse for this long, a wheel counts as stopped
 const unsigned long STOPPED_US = 200000UL;
@@ -57,7 +59,7 @@ volatile long counts[2];
 volatile int8_t directions[2];          // the way the last pulse went, 1 or -1
 volatile unsigned long lastPulseUs[2];  // micros() at the last pulse
 volatile unsigned long turnStartUs[2];  // micros() when this motor turn began
-volatile uint8_t pulsesThisTurn[2];     // pulses since then
+volatile uint16_t pulsesThisTurn[2];    // pulses since then
 volatile unsigned long lastTurnUs[2];   // the last motor turn's time, 0: none
 
 // The interrupt service routine (ISR): runs on every pulse of encoder i, the
@@ -69,15 +71,15 @@ void encoderISR(uint8_t i) {
 	int8_t dir = digitalRead(bPins[i]) == LOW ? 1 : -1;
 	counts[i] += dir;
 
-	// Times a full turn of the motor, 8 pulses, so the uneven spacing of the
-	// encoder's magnets evens out. Starts over after a stop or a change of
+	// Times a full turn of the motor, so the uneven spacing of the encoder's
+	// magnets evens out. Starts over after a stop or a change of
 	// direction.
 	if (dir != directions[i] || now - lastPulseUs[i] > STOPPED_US) {
 		directions[i] = dir;
 		turnStartUs[i] = now;
 		pulsesThisTurn[i] = 0;
 		lastTurnUs[i] = 0;
-	} else if (++pulsesThisTurn[i] == PULSES_PER_MOTOR_TURN) {
+	} else if (++pulsesThisTurn[i] >= pulsesPerMotorTurn) {
 		lastTurnUs[i] = now - turnStartUs[i];
 		turnStartUs[i] = now;
 		pulsesThisTurn[i] = 0;
@@ -115,8 +117,8 @@ float readSpeed(uint8_t i) {
 	if (turnUs == 0 || sinceUs > STOPPED_US) {
 		return 0;
 	}
-	// The last motor turn's 8 pulses took turnUs microseconds
-	float rate = PULSES_PER_MOTOR_TURN * 1000000.0 / turnUs;
+	// The last motor turn's pulses took turnUs microseconds
+	float rate = pulsesPerMotorTurn * 1000000.0 / turnUs;
 	// With no pulse for twice the usual gap since, the motor has slowed down
 	float slowest = 2000000.0 / sinceUs;
 	return dir * min(rate, slowest);
@@ -125,7 +127,7 @@ float readSpeed(uint8_t i) {
 // How many pulses a wheel makes rolling this far
 long mmToPulses(float mm, float diameter, float ratio) {
 	float wheelTurns = mm / (PI * diameter);
-	return wheelTurns * ratio * PULSES_PER_MOTOR_TURN + 0.5;
+	return wheelTurns * ratio * pulsesPerMotorTurn + 0.5;
 }
 
 // ---- Watching for a wheel that stopped turning ----
@@ -265,10 +267,10 @@ long SnappyXOShield::rightCount() {
 }
 
 float SnappyXOShield::leftRPM() {
-	return readSpeed(_leftEncoder()) * 60 / PULSES_PER_MOTOR_TURN / _gearRatio;
+	return readSpeed(_leftEncoder()) * 60 / pulsesPerMotorTurn / _gearRatio;
 }
 float SnappyXOShield::rightRPM() {
-	return -readSpeed(_rightEncoder()) * 60 / PULSES_PER_MOTOR_TURN /
+	return -readSpeed(_rightEncoder()) * 60 / pulsesPerMotorTurn /
 		   _gearRatio;
 }
 
@@ -324,6 +326,14 @@ void SnappyXOShield::setWheelSpacing(float mm) {
 void SnappyXOShield::setGearRatio(float ratio) {
 	if (ratio > 0) {
 		_gearRatio = ratio;
+	}
+}
+void SnappyXOShield::setEncoderPulses(int pulses) {
+	if (pulses > 0) {
+		// The interrupts read it, and an UNO R3 writes it in two steps
+		noInterrupts();
+		pulsesPerMotorTurn = pulses;
+		interrupts();
 	}
 }
 void SnappyXOShield::setRatedRPM(float rpm) {
@@ -395,7 +405,7 @@ bool SnappyXOShield::_moveWheels(long pulses, int8_t leftDir, int8_t rightDir,
 	// The fastest the position and heading controllers ask a wheel to go
 	float limit = abs(rpm);
 	// Turns pulses every 100 ms into wheel RPM
-	float toRPM = 600.0 / (PULSES_PER_MOTOR_TURN * _gearRatio);
+	float toRPM = 600.0 / (pulsesPerMotorTurn * _gearRatio);
 
 	// Each controller's memory, starting over for every move
 	float positionIntegral = 0, headingIntegral = 0;

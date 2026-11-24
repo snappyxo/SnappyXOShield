@@ -136,6 +136,7 @@ If you call `swapMotors()` because the motors are plugged in the other way round
 | `shield.setWheelDiameter(mm)`              | The wheels' diameter in millimeters, 61 if not set           |
 | `shield.setWheelSpacing(mm)`               | From the middle of one wheel to the middle of the other, in millimeters, 96 if not set. Only the turns use it |
 | `shield.setGearRatio(ratio)`               | How many times the motor turns for one turn of the wheel, for example `48` for a 48:1 gearbox. 120 if not set |
+| `shield.setEncoderPulses(pulses)`          | How many pulses the encoder gives for each turn of the motor, on each of its outputs: the PPR on its datasheet. 8 if not set |
 | `shield.setRatedRPM(rpm)`                  | The wheels' speed at full power, from the motor's datasheet, 160 if not set. Without the speed controller, the moves guess the power for a speed from it |
 | `shield.setSpeedPID(kp, ki, kd)`           | Turns on the speed controllers for the moves: see [Tuning your robot with PID](#tuning-your-robot-with-pid) |
 | `shield.setHeadingPID(kp, ki, kd)`         | Turns on the heading controller                              |
@@ -188,6 +189,7 @@ Once the moves land on their target counts, what's left is the robot's measureme
 
 - Turns too little: make the wheel spacing bigger, for example `shield.setWheelSpacing(100);`. Turns too far: smaller. Spin and pivot turns slip differently, so if one is right and the other isn't, call `setWheelSpacing()` with each one's value before it.
 - Drives too short: make the wheel diameter smaller. Drives too far: bigger.
+- Drives and turns both fall short, or both go too far, by the same share, such as two-thirds of the way: the gear ratio or the encoder's pulses per motor turn is wrong. Check both on the motor's datasheet, and set them with `setGearRatio()` and `setEncoderPulses()`.
 
 [`examples/Encoders/TraceShape/`](examples/Encoders/TraceShape/TraceShape.ino) drives a U shape.
 

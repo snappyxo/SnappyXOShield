@@ -53,7 +53,7 @@ const bool PLOT = false;  // true: the Serial Plotter instead of the table
 const float WHEEL_DIAMETER_MM = 61;
 const float WHEEL_SPACING_MM = 96;      // from the middle of one wheel to the middle of the other
 const float GEAR_RATIO = 120;           // how many times the motor turns for each turn of the wheel
-const float PULSES_PER_MOTOR_TURN = 8;  // how many pulses the encoder gives for each turn of the motor: its PPR
+const int PULSES_PER_MOTOR_TURN = 8;    // how many pulses the encoder gives for each turn of the motor: its PPR
 const float PULSES_PER_WHEEL_TURN = PULSES_PER_MOTOR_TURN * GEAR_RATIO;
 const float RATED_RPM = 160;            // the wheel's speed at full power, from the motor's datasheet
 
@@ -72,6 +72,7 @@ void setup() {
   shield.setWheelDiameter(WHEEL_DIAMETER_MM);
   shield.setWheelSpacing(WHEEL_SPACING_MM);
   shield.setGearRatio(GEAR_RATIO);
+  shield.setEncoderPulses(PULSES_PER_MOTOR_TURN);
   shield.setRatedRPM(RATED_RPM);
 
   shield.setSpeedPID(speedKp, speedKi, speedKd);

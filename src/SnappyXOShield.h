@@ -97,9 +97,9 @@ class SnappyXOShield {
 	void beginEncoders();
 
 	// How far each wheel has turned since beginEncoders() or resetCounts(),
-	// in pulses: 8 per turn of the motor, so 960 per turn of the wheel with a
-	// 120:1 gearbox. Counts up when the wheel rolls forward, down when it rolls
-	// backward.
+	// in pulses: setEncoderPulses() for each turn of the motor, so that times
+	// setGearRatio() for each turn of the wheel. Counts up when the wheel rolls
+	// forward, down when it rolls backward.
 	long leftCount();
 	long rightCount();
 	void resetCounts();
@@ -136,7 +136,7 @@ class SnappyXOShield {
 
 	// The robot's measurements, for the calls above. The defaults fit the
 	// SnappyXO robot: 61 mm wheels, 96 mm apart, and a 120:1 gearbox rated at
-	// 160 RPM.
+	// 160 RPM, with an 8-pulse encoder.
 	void setWheelDiameter(float mm);
 	// From the middle of one wheel to the middle of the other. Only the turns
 	// use it: if they fall short, make it bigger; if they turn too far,
@@ -145,6 +145,9 @@ class SnappyXOShield {
 	// How many times the motor turns for one turn of the wheel: 120 for a
 	// 120:1 gearbox
 	void setGearRatio(float ratio);
+	// How many pulses the encoder gives for each turn of the motor, on each of
+	// its outputs: the PPR (pulses per revolution) on its datasheet
+	void setEncoderPulses(int pulses);
 	// The wheel's speed at full power, in RPM after the gearbox, from the
 	// motor's datasheet: 160 for the DFRobot FIT0450 at 6 V. Without
 	// setSpeedPID(), the moves guess the power for a speed from it. A real
