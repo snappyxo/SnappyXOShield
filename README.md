@@ -29,7 +29,7 @@ void loop() {
 }
 ```
 
-See [`examples/BasicMotorControl/`](examples/BasicMotorControl/BasicMotorControl.ino) for the full sketch, and [`examples/MicroBlueDrive/`](examples/MicroBlueDrive/MicroBlueDrive.ino) to drive from the MicroBlue app on an UNO R4 WiFi. For encoder motors, see [`EncoderTest`](examples/Encoders/EncoderTest/EncoderTest.ino), [`TraceShape`](examples/Encoders/TraceShape/TraceShape.ino), [`PIDSquare`](examples/Encoders/PIDSquare/PIDSquare.ino) and [`PIDSpeedControl`](examples/Encoders/PIDSpeedControl/PIDSpeedControl.ino).
+See [`examples/BasicMotorControl/`](examples/BasicMotorControl/BasicMotorControl.ino) for the full sketch, and [`examples/MicroBlueDrive/`](examples/MicroBlueDrive/MicroBlueDrive.ino) to drive from the MicroBlue app on an UNO R4 WiFi. For encoder motors, see [`EncoderTest`](examples/Encoders/EncoderTest/EncoderTest.ino), [`TraceShape`](examples/Encoders/TraceShape/TraceShape.ino), [`PIDSquare`](examples/Encoders/PIDSquare/PIDSquare.ino), [`MicroBluePIDSquare`](examples/Encoders/MicroBluePIDSquare/MicroBluePIDSquare.ino) and [`PIDSpeedControl`](examples/Encoders/PIDSpeedControl/PIDSpeedControl.ino).
 
 ## Shields
 
@@ -236,6 +236,22 @@ Tune one controller at a time, in this order, with [`examples/Encoders/PIDSquare
 6. Then tune the measurements above, so the counts turn into the right distance and angle.
 
 Copy the tuned lines into `setup()` of every sketch for that robot, after `beginEncoders()`.
+
+#### Tuning from your phone
+
+On an UNO R4 WiFi, [`examples/Encoders/MicroBluePIDSquare/`](examples/Encoders/MicroBluePIDSquare/MicroBluePIDSquare.ino) drives the same square from the MicroBlue app, over the board's built-in Bluetooth. You type each controller's gains, the speed and the wheel spacing on your phone and press Run, with no upload in between. A chart shows the speed asked for and each wheel's speed during every move, and the Panel shows how far the last move went past its target and how far the left wheel ended up ahead. Next to each box you type in, a Value shows what the robot is really using, after a reset too. It needs the MicroBlue library 2.1 or later.
+
+Add its layout in the app with Layouts → + → Scan QR Code:
+
+<img src="extras/MicroBluePIDSquare-layout.png" alt="QR code of the MicroBluePIDSquare layout for the MicroBlue app" width="256">
+
+Or copy this link into Layouts → + → Add from Link:
+
+```
+microblue://layout#lVM7b4MwEP4rlmeGRN2YO7RSI6Fm6FB1MOEKloxx_YBGEf-9PvOoKSVKFsR95--h8_lCW5ruEypZDTSl2fMjOX45poEmtNC89eD7hdqzwq5iEoRv8MIXxY72ydw6NdI0AllDc0_7j2QkRAq5s7aR0ynt8FewHA_RVyeJrYCYwT8Wr5i2E6mrAISJeG8IEKMAipRYpkuwCRHw6b-alxUSneQWHbKDLzoui6aj6cMusmiZcHN6xQyyJoPMlyHZIP6rp5wwYOKkCxlWASsinRefiQSQ5OebVbSq4yFlB8IlcQb7o0BMtfA9T2rJPIIlOIAtnzDA-DzWBBfiVr-VgncMGKps-uI8uCwj3tOA3OW9VkH3Eb3qrxrDLQ9LOV_4CN2V4B8djDDBVzMYxU7L9NNSB3yVoa637-CvEoYIb2ZS8y-z_wE
+```
+
+The sketch's comments list the layout's items, to build it by hand instead.
 
 | What you see | Try |
 |--------------|-----|

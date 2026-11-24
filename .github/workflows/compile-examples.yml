@@ -18,7 +18,10 @@ jobs:
               - source-path: ./
             sketch-paths: |
               - examples/BasicMotorControl
-              - examples/Encoders
+              - examples/Encoders/EncoderTest
+              - examples/Encoders/TraceShape
+              - examples/Encoders/PIDSquare
+              - examples/Encoders/PIDSpeedControl
           - name: UNO R4 WiFi
             fqbn: arduino:renesas_uno:unor4wifi
             platform: arduino:renesas_uno
